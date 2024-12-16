@@ -53,5 +53,5 @@ set(SOURCE_FILES
 )
 
 # Create an executable target from the source files
-add_executable(ComputerArchitectureClassProjectExecutable ${SOURCE_FILES})
+add_executable(ComputerArchitectureClassProjectExecutable ${SOURCE_FILES} "headers/cache.h")
 
