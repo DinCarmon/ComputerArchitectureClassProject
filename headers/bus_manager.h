@@ -5,6 +5,12 @@
 
 #define NUM_REQUESTORS 4  // Fixed number of BusRequestors
 
+// Define bus status constants in uppercase
+#define BUS_FREE   1    // The bus is free and available for use
+#define BUS_RD     2    // The bus is performing a read operation
+#define BUS_RDX    3    // The bus is performing a read-exclusive operation
+#define BUS_INVALID 4   // The bus is in an invalid state (e.g., error state or not in use)
+
 typedef struct {
     int LastTransactionCycle;  // The last cycle a transaction occurred
     int BusStatus;             // Current status of the bus
