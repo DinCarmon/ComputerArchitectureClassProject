@@ -1,38 +1,73 @@
 #include "cache.h"
+#include <string.h>
 
 // Function to create and initialize a Cache instance
 Cache cache_create(void) {
-    Cache newCache;
-
-    // Zero out DSRAM and TSRAM
-    memset(newCache.DSRAM, 0, sizeof(newCache.DSRAM));
-    memset(newCache.TSRAM, 0, sizeof(newCache.TSRAM));
-
-    return newCache;
+    Cache new_cache = { 0 };  // Initialize all fields to zero
+    return new_cache;
 }
 
-// Function to extract the tag (bits 10 to 19) from an address
-int get_tag(int address) {
-    return (address >> 10) & 0x3FF; // Mask for 10 bits
+// Function to extract the tag from an address  
+int get_tag(unsigned int address) {
+    // Shift the address right by the number of bits for index and block offset,
+    // then mask to ensure only the tag bits are kept (12 bits for tag).
+    return (address >> (INDEX_SIZE + BLOCK_OFFSET_SIZE)) & ((1 << TAG_SIZE) - 1);
 }
 
-// Function to extract the index (bits 2 to 9) from an address
-int get_index(int address) {
-    return (address >> 2) & 0xFF; // Mask for 8 bits (binary 11111111)
+// Function to extract the index from an address
+int get_index(unsigned int address) {
+    // Extract index by shifting the address right by the number of block offset bits,
+    // then apply a mask to extract the index bits.
+    return (address >> BLOCK_OFFSET_SIZE) & ((1 << INDEX_SIZE) - 1);  // Mask the index bits
 }
 
 // Function to check if an address is in the cache and return valid bits if the tag is found
-int in_cache(int address, Cache* cache) {
-    // Extract the tag and index from the address
-    int tag = get_tag(address);
-    int index = get_index(address);
+int in_cache(unsigned int address, Cache* cache) {
+    int index = get_index(address);  // Get the index from the address
+    int tag = get_tag(address);  // Get the tag from the address
 
-    // Extract the relevant bits of TSRAM[index]
-    int tag_in_cache = cache->TSRAM[index][0] & 0xFFF; // Mask to get the lower 12 bits (bits 0-11)
+    // Check if the tag matches and if the state is not Invalid
+    if (cache->tsram[index].tag == tag && cache->tsram[index].state != INVALID) {
+        return 1;  // Cache hit
+    }
+    return 0;  // Cache miss
+}
 
-    // Extract bits 12-13 from the address
-    int valid_bits = (address >> 12) & 0x3; // Extract bits 12 and 13
+// Function to read data from the cache (entire row, not just byte-wise)
+unsigned int read_cache(unsigned int address, Cache* cache) {
+    // First check if the address is in the cache
+    if (in_cache(address, cache)) {
+        int index = get_index(address);  // Get the index from the address
+        int block_offset = address & ((1 << BLOCK_OFFSET_SIZE) - 1);  // Get the block offset
 
-    // If the tag matches, return the valid bits; otherwise, return 0
-    return (tag == tag_in_cache) ? valid_bits : 0;
+        // Calculate the address in DSRAM by using index * WORD_SIZE + block_offset
+        int dsm_address = index * WORD_SIZE + block_offset;
+
+        // Access the correct word in DSRAM
+        unsigned int word_data = cache->dsram[dsm_address];
+
+        return word_data;  // Return the appropriate word from the cache line
+    }
+    return 0;  // Cache miss, return 0 or handle the miss case as needed
+}
+
+// Function to write data to the cache (entire row, not just byte-wise)
+int write_cache(unsigned int address, Cache* cache, unsigned int data) {
+    // First check if the address is in the cache
+    if (in_cache(address, cache)) {
+        int index = get_index(address);  // Get the index from the address
+        int block_offset = address & ((1 << BLOCK_OFFSET_SIZE) - 1);  // Get the block offset
+
+        // Calculate the address in DSRAM by using index * WORD_SIZE + block_offset
+        int dsm_address = index * WORD_SIZE + block_offset;
+
+        // Write the modified row back to DSRAM
+        cache->dsram[dsm_address] = data;
+
+        // Set the cache line state to Modified
+        cache->tsram[index].state = MODIFIED;
+
+        return 1;  // Write success
+    }
+    return 0;  // Cache miss, return failure
 }

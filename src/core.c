@@ -1,6 +1,5 @@
 #include "core.h"
-#include <stdlib.h> // For malloc and free
-#include <string.h> // For memset
+
 
 // Function to initialize a Core instance
 Core core_create(void) {

@@ -6,17 +6,18 @@ BusManager bus_manager_create(BusRequestor requestors[NUM_REQUESTORS]) {
 
     // Initialize bus attributes
     manager.LastTransactionCycle = 0;
-    manager.BusStatus = 0; // Idle
+    manager.BusStatus = BUS_FREE;
     manager.bus_shared = false;
     manager.bus_origid = -1;
     manager.bus_cmd = 0;
     manager.bus_addr = 0;
     manager.bus_data = 0;
-    manager.core_turn = 0;  // Initialize core_turn to 0
+    manager.core_turn = 0;
+    manager.numOfCyclesInSameStatus = 0;
 
-    // Initialize enlisted_requestors list as empty (i.e., NULL)
+    // Initialize enlisted_requestors list as empty
     for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        manager.enlisted_requestors[i] = (BusRequestor){ 0 };  // Setting all to zero (empty)
+        manager.enlisted_requestors[i] = (BusRequestor){ 0 };
     }
 
     // Copy the provided requestors into the manager's array
@@ -34,21 +35,17 @@ void bus_manager_reset(BusManager* manager) {
     }
 
     // Reset bus attributes
-    manager->BusStatus = 0;
+    manager->BusStatus = BUS_FREE;
     manager->bus_shared = false;
     manager->bus_origid = -1;
     manager->bus_cmd = 0;
     manager->bus_addr = 0;
     manager->bus_data = 0;
+    manager->numOfCyclesInSameStatus = 0;
 
     // Reset each BusRequestor
     for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        manager->requestors[i].busRequestorOccupied_now = false;
-        manager->requestors[i].busRequestorOccupied_updated = false;
-        manager->requestors[i].busRequestInTransaction_now = false;
-        manager->requestors[i].request.operation = 0;
-        manager->requestors[i].request.address = 0;
-        manager->requestors[i].request.start_cycle = 0;
+        bus_requestor_reset(&manager->requestors[i]);
     }
 
     // Reset enlisted_requestors list and core_turn
@@ -57,55 +54,39 @@ void bus_manager_reset(BusManager* manager) {
 
 // Function to check if the bus is free
 bool IsBusFree(const BusManager* manager) {
-    if (!manager) {
-        return false; // Assume bus is not free if manager is NULL
-    }
-    return manager->BusStatus == 0;
+    return manager && manager->BusStatus == BUS_FREE;
 }
 
 // Function to arrange the priorities of the requestors based on the bus_origid
 void arrangePriorities(BusManager* manager) {
     if (!manager) {
-        return; // Handle null manager pointer
+        return;
     }
 
-    // Get the originator's index (bus_origid) in the requestors array
     int originIndex = manager->bus_origid;
-
-    // Ensure bus_origid is valid
     if (originIndex < 0 || originIndex >= NUM_REQUESTORS) {
         return;
     }
 
-    // Get the priority of the requestor at the bus_origid index
     int originPriority = manager->requestors[originIndex].priority;
-
-    // Iterate through the requestors and adjust priorities
     for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        if (i != originIndex) {
-            // If requestor's priority is higher, subtract 1 from it
-            if (manager->requestors[i].priority > originPriority) {
-                manager->requestors[i].priority -= 1;
-            }
+        if (i != originIndex && manager->requestors[i].priority > originPriority) {
+            manager->requestors[i].priority -= 1;
         }
     }
-
-    // Set the priority of the requestor at bus_origid to the number of cores
     manager->requestors[originIndex].priority = NUM_REQUESTORS;
 }
 
 // Function to add a BusRequestor to the enlisted_requestors list
 void RequestForBus(BusManager* manager, BusRequestor requestor) {
     if (!manager) {
-        return; // Handle null manager pointer
+        return;
     }
 
-    // Try to find an empty spot in the enlisted_requestors array
     for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        if (manager->enlisted_requestors[i].id == 0) { // Assuming id == 0 means uninitialized/empty
-            // Add the requestor to the list
+        if (manager->enlisted_requestors[i].id == 0) {
             manager->enlisted_requestors[i] = requestor;
-            break; // Exit the loop after adding the requestor
+            break;
         }
     }
 }
@@ -113,31 +94,27 @@ void RequestForBus(BusManager* manager, BusRequestor requestor) {
 // Function to reset the enlisted_requestors list to zero
 void resetEnlistedRequestors(BusManager* manager) {
     if (!manager) {
-        return; // Handle null manager pointer
+        return;
     }
 
-    // Set all enlisted requestors to empty (zero) values
     for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        manager->enlisted_requestors[i] = (BusRequestor){ 0 };  // Setting all to zero (empty)
+        manager->enlisted_requestors[i] = (BusRequestor){ 0 };
     }
 
-    // Set core_turn to 0
     manager->core_turn = 0;
 }
 
 // Function to assign the core with the lowest priority to core_turn
 void FinishBusEnlisting(BusManager* manager) {
     if (!manager) {
-        return; // Handle null manager pointer
+        return;
     }
 
-    // Initialize the minimum priority to a large number
     int minPriority = INT_MAX;
     int coreWithMinPriority = -1;
 
-    // Iterate through the enlisted_requestors list to find the core with the lowest priority
     for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        if (manager->enlisted_requestors[i].id != 0) { // Only consider valid enlisted requestors
+        if (manager->enlisted_requestors[i].id != 0) {
             int currentPriority = manager->enlisted_requestors[i].priority;
             if (currentPriority < minPriority) {
                 minPriority = currentPriority;
@@ -146,8 +123,54 @@ void FinishBusEnlisting(BusManager* manager) {
         }
     }
 
-    // Assign the core with the lowest priority to core_turn
     if (coreWithMinPriority != -1) {
         manager->core_turn = coreWithMinPriority;
+    }
+}
+
+// Function to advance the bus to the next cycle
+void AdvanceBusToNextCycle(BusManager* manager, int currentCycle) {
+    if (!manager) {
+        return; // Handle null pointer
+    }
+
+    // Reset the enlisted requestors array
+    resetEnlistedRequestors(manager);
+
+    switch (manager->BusStatus) {
+    case BUS_FREE:
+        // Change status only if core_turn is valid
+        if (manager->core_turn != -1) {
+            manager->BusStatus = manager->bus_cmd; // Transition to the current bus command
+        }
+        break;
+
+    case BUS_RD:
+    case BUS_RDX:
+        // Transition to BUS_BEFORE_FLUSH
+        manager->BusStatus = BUS_BEFORE_FLUSH;
+        manager->LastTransactionCycle = currentCycle;
+        break;
+
+    case BUS_BEFORE_FLUSH:
+        // Transition to BUS_FLUSH if 15 cycles have passed
+        if (currentCycle - manager->LastTransactionCycle >= 15) {
+            manager->BusStatus = BUS_FLUSH;
+            manager->core_turn = -1; // Set core_turn to -1
+        }
+        break;
+
+    case BUS_FLUSH:
+        // Increment the number of cycles in the same status
+        manager->numOfCyclesInSameStatus++;
+        // Transition to BUS_FREE if the block size limit is reached
+        if (manager->numOfCyclesInSameStatus == BLOCK_SIZE) {
+            manager->BusStatus = BUS_FREE;
+            manager->numOfCyclesInSameStatus = 0; // Reset the counter
+        }
+        break;
+
+    default:
+        break;
     }
 }

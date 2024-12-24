@@ -1,5 +1,7 @@
 #pragma once
 #include <stdint.h> // For uint32_t
+#include <stdlib.h> // For malloc and free
+#include <string.h> // For memset
 #include "cache.h"  // Include the Cache definition
 
 // Define the Core struct
