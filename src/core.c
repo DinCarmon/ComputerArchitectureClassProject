@@ -2,8 +2,10 @@
 
 
 // Function to initialize a Core instance
-Core core_create(void) {
+Core core_create(int id) {
     Core newCore;
+
+    newCore.id = id
 
     // Initialize program counters to 0
     newCore.pc_register_now = 0;

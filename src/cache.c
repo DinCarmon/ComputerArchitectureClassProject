@@ -33,6 +33,14 @@ int in_cache(unsigned int address, Cache* cache) {
     return 0;  // Cache miss
 }
 
+// Function to get state of address
+int get_state(unsigned int address, Cache* cache) {
+    int index = get_index(address);  // Get the index from the address
+    int tag = get_tag(address);  // Get the tag from the address
+
+    return cache->tsram[index].state;  // Cache miss
+}
+
 // Function to read data from the cache (entire row, not just byte-wise)
 unsigned int read_cache(unsigned int address, Cache* cache) {
     // First check if the address is in the cache
@@ -57,6 +65,7 @@ int write_cache(unsigned int address, Cache* cache, unsigned int data) {
     if (in_cache(address, cache)) {
         int index = get_index(address);  // Get the index from the address
         int block_offset = address & ((1 << BLOCK_OFFSET_SIZE) - 1);  // Get the block offset
+        int tag = get_tag(address);  // Get the tag from the address
 
         // Calculate the address in DSRAM by using index * WORD_SIZE + block_offset
         int dsm_address = index * WORD_SIZE + block_offset;
@@ -64,10 +73,30 @@ int write_cache(unsigned int address, Cache* cache, unsigned int data) {
         // Write the modified row back to DSRAM
         cache->dsram[dsm_address] = data;
 
+        cache->tsram[index].tag = tag;
+
         // Set the cache line state to Modified
         cache->tsram[index].state = MODIFIED;
 
         return 1;  // Write success
     }
     return 0;  // Cache miss, return failure
+}
+
+
+// Function to update state in cache
+void update_state(unsigned int address, Cache* cache, int state) {
+    // First check if the address is in the cache
+
+    int index = get_index(address);  // Get the index from the address
+    int tag = get_tag(address);  // Get the tag from the address
+
+
+    cache->tsram[index].tag = tag;
+
+    // Set the cache line state to Modified
+    cache->tsram[index].state = state;
+
+
+    return;
 }

@@ -49,3 +49,9 @@ unsigned int read_cache(unsigned int address, Cache* cache);
 
 // Function to write data to the cache
 int write_cache(unsigned int address, Cache* cache, unsigned int data);
+
+// Function to get state of address
+int get_state(unsigned int address, Cache* cache);
+
+// Function to update state in cache
+void update_state(unsigned int address, Cache* cache, int state);

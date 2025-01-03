@@ -53,5 +53,5 @@ set(SOURCE_FILES
 )
 
 # Create an executable target from the source files
-add_executable(ComputerArchitectureClassProjectExecutable ${SOURCE_FILES} "headers/cache.h")
+add_executable(ComputerArchitectureClassProjectExecutable ${SOURCE_FILES} "headers/cache.h" "src/bus_snooper.c" "headers/bus_snooper.h")
 

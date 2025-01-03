@@ -6,6 +6,7 @@
 
 // Define the Core struct
 typedef struct {
+    int id                            //core id
     int pc_register_now;              // Current program counter
     int pc_register_updated;         // Updated program counter
     uint32_t registers_now[32];      // Current state of registers
@@ -16,7 +17,7 @@ typedef struct {
 } Core;
 
 // Function to initialize a Core instance
-Core core_create(void);
+Core core_create(int id);
 
 // Function to free allocated resources in a Core instance
 void core_destroy(Core* core);
