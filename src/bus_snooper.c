@@ -24,7 +24,7 @@ void snoop(BusSnooper* snooper, Cache* cache) {
     // Check if the bus command is BUS_RD or BUS_RDX and the originating ID isn't the snooper's ID
     if ((manager->bus_cmd == BUS_RD || manager->bus_cmd == BUS_RDX) && manager->bus_origid != snooper->id) {
         unsigned int address = manager->bus_addr;
-        int state = get_state(address, cache);
+        int state = getState(address, cache);
 
         // If the cache line is MODIFIED and the command is BUS_RD, return without doing anything
         if (state == MODIFIED && manager->bus_cmd == BUS_RD) {
@@ -32,13 +32,13 @@ void snoop(BusSnooper* snooper, Cache* cache) {
         }
 
         // If the command is BUS_RDX and the address is in cache, invalidate the cache line
-        if (manager->bus_cmd == BUS_RDX && in_cache(address, cache)) {
-            update_state(address, cache, INVALID);
+        if (manager->bus_cmd == BUS_RDX && inCache(address, cache)) {
+            updateState(address, cache, INVALID);
         }
 
         // If the command is BUS_RD and the cache state is EXCLUSIVE, update to SHARED
         if (manager->bus_cmd == BUS_RD && state == EXCLUSIVE) {
-            update_state(address, cache, SHARED);
+            updateState(address, cache, SHARED);
         }
     }
 }

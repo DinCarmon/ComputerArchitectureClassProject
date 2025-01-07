@@ -45,7 +45,7 @@ void bus_manager_reset(BusManager* manager) {
 
     // Reset each BusRequestor
     for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        bus_requestor_reset(&manager->requestors[i]);
+        resetBusRequestor(&manager->requestors[i]);
     }
 
     // Reset enlisted_requestors list and core_turn

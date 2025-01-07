@@ -16,17 +16,17 @@ Core core_create(int id) {
     memset(newCore.registers_updated, 0, sizeof(newCore.registers_updated));
 
     // Initialize InstructionMemory to 0
-    memset(newCore.InstructionMemory, 0, sizeof(newCore.InstructionMemory));
+    memset(newCore.instructionMemory, 0, sizeof(newCore.instructionMemory));
 
     // Allocate memory for caches and initialize them
     newCore.cache_now = (Cache*)malloc(sizeof(Cache));
     newCore.cache_updated = (Cache*)malloc(sizeof(Cache));
 
     if (newCore.cache_now) {
-        *newCore.cache_now = cache_create(); // Initialize cache_now
+        *newCore.cache_now = cacheCreate(); // Initialize cache_now
     }
     if (newCore.cache_updated) {
-        *newCore.cache_updated = cache_create(); // Initialize cache_updated
+        *newCore.cache_updated = cacheCreate(); // Initialize cache_updated
     }
 
     return newCore;

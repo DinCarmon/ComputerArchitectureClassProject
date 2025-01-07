@@ -1,0 +1,24 @@
+#ifndef DECODE_STAGE_H
+#define DECODE_STAGE_H
+
+#include <stdint.h>
+#include <stdbool.h>
+#include "stage_data.h"
+
+/**
+ * Decode Stage - Second stage in the pipeline
+ * Responsible for instruction decoding and hazard detection
+ */
+typedef struct decodeStage
+{
+    StageData state;
+
+    /**
+     * @return Should stall?
+     */
+    bool (*doOperation)(struct decodeStage* self);
+} DecodeStage;
+
+DecodeStage createDecodeStage();
+
+#endif

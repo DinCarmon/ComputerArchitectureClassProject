@@ -41,7 +41,7 @@ int main() {
     printf("Core 2 snooped the bus.\n");
 
     // Verify cache state for Core 2
-    int state = get_state(0xA, &cache2);
+    int state = getState(0xA, &cache2);
     printf("Cache state for address 0xA in Core 2: %d\n", state);
 
     // Simulate a BUS_RDX transaction from Core 2
@@ -55,7 +55,7 @@ int main() {
     printf("Core 1 snooped the bus.\n");
 
     // Check if address 0xB in Core 1 is invalidated
-    state = get_state(0xB, &cache1);
+    state = getState(0xB, &cache1);
     printf("Cache state for address 0xB in Core 1: %d\n", state);
 
     // Simulate writing data to memory

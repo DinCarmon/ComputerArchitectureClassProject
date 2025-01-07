@@ -1,13 +1,24 @@
-#pragma once
+#ifndef MEMORY_STAGE_H
+#define MEMORY_STAGE_H
 
-#include <stdbool.h>  // For the bool type
-// Define the memoryStage struct
+#include <stdint.h>
+#include <stdbool.h>
+#include "stage_data.h"
 
-typedef struct {
-    stageData data;                     // Nested stageData struct
-    bool (*run_operation)(void);        // Function pointer for operations
-} memoryStage;
+/**
+ * Memory Stage - Fourth stage in the pipeline
+ * Handles memory operations and cache interactions
+ */
+typedef struct memoryStage
+{
+    StageData state;
 
-// Declare an example function for run_operation
-bool memory_stage_run_operation(void);
+    /**
+     * @return Should stall?
+     */
+    bool (*doOperation)(struct memoryStage* self);
+} MemoryStage;
 
+MemoryStage createMemoryStage();
+
+#endif
