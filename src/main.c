@@ -1,75 +1,91 @@
 #include <stdio.h>
-#include "main_memory.h"
-#include "bus_manager.h"
-#include "bus_snooper.h"
-#include "cache.h"
-#include "core.h"
+#include "main.h"
+
 
 int main() {
-    // Initialize main memory
-    MainMemory memory = main_memory_create();
-    printf("Main memory initialized.\n");
+    // Test MainMemory
+    printf("Testing MainMemory...\n");
+    MainMemory* memory = create_main_memory();
 
-    // Initialize bus manager
-    BusManager manager = bus_manager_create();
-    printf("Bus manager initialized.\n");
+    // Write and read test
+    unsigned int test_address = 1024;
+    unsigned int test_data = 42;
+    main_memory_write(memory, test_address, test_data);
+    unsigned int read_data = main_memory_read(memory, test_address);
 
-    // Initialize caches (for testing, we'll use 2 caches)
-    Cache cache1, cache2;
-    cache1.size = 16; // Example cache size
-    cache2.size = 16;
-    printf("Caches initialized.\n");
+    if (read_data == test_data) {
+        printf("MainMemory test passed: Address %u contains %u\n", test_address, read_data);
+    }
+    else {
+        printf("MainMemory test failed: Address %u contains %u, expected %u\n", test_address, read_data, test_data);
+    }
 
-    // Initialize cores
-    Core core1 = core_create(1);
-    Core core2 = core_create(2);
-    printf("Cores initialized.\n");
+    // Clean up MainMemory
+    main_memory_destroy(memory);
 
-    // Initialize bus snoopers for each core
-    BusSnooper snooper1 = bus_snooper_create(&core1, &manager, 1);
-    BusSnooper snooper2 = bus_snooper_create(&core2, &manager, 2);
-    printf("Bus snoopers initialized.\n");
+    // Test Core
+    printf("Testing Core...\n");
+    Core* core = core_create(1);
 
-    // Simulate a bus transaction (BUS_RD)
-    manager.bus_cmd = BUS_RD;
-    manager.bus_addr = 0xA;  // Example address
-    manager.bus_origid = 1; // Core 1 originates this request
-    printf("Simulated bus transaction: BUS_RD, address: 0xA, originating ID: 1.\n");
+    // Example: Set some registers and verify
+    core->registers_now[0] = 10;
+    core->registers_now[1] = 20;
+    printf("Core registers test: R0 = %u, R1 = %u\n", core->registers_now[0], core->registers_now[1]);
 
-    // Core 2 reacts to the bus transaction
-    snoop(&snooper2, &cache2);
-    printf("Core 2 snooped the bus.\n");
+    // Example: Instruction memory test
+    core->InstructionMemory[0] = 12345;
+    printf("Core InstructionMemory test: IM[0] = %u\n", core->InstructionMemory[0]);
 
-    // Verify cache state for Core 2
-    int state = getState(0xA, &cache2);
-    printf("Cache state for address 0xA in Core 2: %d\n", state);
+    // Clean up Core
+    core_destroy(core);
 
-    // Simulate a BUS_RDX transaction from Core 2
-    manager.bus_cmd = BUS_RDX;
-    manager.bus_addr = 0xB;  // Another example address
-    manager.bus_origid = 2; // Core 2 originates this request
-    printf("Simulated bus transaction: BUS_RDX, address: 0xB, originating ID: 2.\n");
+    BusRequestor* req1 = bus_requestor_create(0);
+    BusRequestor* req2 = bus_requestor_create(1);
+    BusRequestor* req3 = bus_requestor_create(2);
+    BusRequestor* req4 = bus_requestor_create(3);
 
-    // Core 1 reacts to the bus transaction
-    snoop(&snooper1, &cache1);
-    printf("Core 1 snooped the bus.\n");
+    // Set initial priorities
+    req1->priority = 1;
+    req2->priority = 3;
+    req3->priority = 2;
+    req4->priority = 0;
 
-    // Check if address 0xB in Core 1 is invalidated
-    state = getState(0xB, &cache1);
-    printf("Cache state for address 0xB in Core 1: %d\n", state);
+    // Step 2: Create array of BusRequestors
+    BusRequestor* requestors[NUM_REQUESTORS] = { req1, req2, req3, req4 };
 
-    // Simulate writing data to memory
-    unsigned int data = 42; // Example data
-    main_memory_write(&memory, 0xC, data);
-    printf("Wrote data %u to memory at address 0xC.\n", data);
+    // Step 3: Create BusManager
+    BusManager* manager = bus_manager_create(requestors);
+    manager->bus_origid = 0; // Set origin requestor index (e.g., req2)
+   
 
-    // Simulate reading data from memory
-    unsigned int read_data = main_memory_read(&memory, 0xC);
-    printf("Read data from memory at address 0xC: %u\n", read_data);
+    // Step 4: Test arrangePriorities
+    printf("Before arrangePriorities:\n");
+    for (int i = 0; i < NUM_REQUESTORS; ++i) {
+        printf("Requestor %d: Priority %d\n", manager->requestors[i]->id, manager->requestors[i]->priority);
+    }
 
-    // Advance the bus manager to the next cycle
-    AdvanceBusToNextCycle(&manager);
-    printf("Bus manager advanced to the next cycle.\n");
+    arrangePriorities(manager);
 
-    return 0;
+    printf("\nAfter arrangePriorities:\n");
+    for (int i = 0; i < NUM_REQUESTORS; ++i) {
+        printf("Requestor %d: Priority %d\n", manager->requestors[i]->id, manager->requestors[i]->priority);
+    }
+
+    RequestForBus(manager, req4);
+
+    printf("\nAfter RequestForBus:\n");
+    for (int i = 0; i < NUM_REQUESTORS; ++i) {
+        if (manager->enlisted_requestors[i]) {
+            printf("Enlisted Requestor %d\n", manager->enlisted_requestors[i]->id);
+        }
+    }
+
+    // Step 6: Destroy BusRequestors and BusManager
+    bus_requestor_destroy(req1);
+    bus_requestor_destroy(req2);
+    bus_requestor_destroy(req3);
+    bus_requestor_destroy(req4);
+    bus_manager_destroy(manager);
 }
+
+    
