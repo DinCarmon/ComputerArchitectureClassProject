@@ -45,6 +45,26 @@ const int32_t INDEX_BIT_LENGTH                  = 6;            // ((log(DATA_CA
 const int32_t TAG_FIELD_SIZE_IN_BITS            = 12;           // ((log(MEMORY_DEPTH) / LOG2) - (log(DATA_CACHE_DEPTH) / LOG2))
 const int32_t STATUS_BITS_SIZE_FOR_BLOCK        = 2;
 
+// Default instruction memory file prefix
+const char DEFAULT_INSTRUCTION_MEMORY_FILE_PATH_PREFIX[]    = "imem";
+// Default main memory file path
+const char DEFAULT_MAIN_MEMORY_FILE_INPUT_PATH[]            = "memin.txt";
+const char DEFAULT_MAIN_MEMORY_FILE_OUTPUT_PATH[]           = "memout.txt";
+// Default register file prefix
+const char DEFAULT_REGISTER_FILE_PATH_PREFIX[]              = "regout";
+// Default trace paths
+const char DEFAULT_CORE_TRACE_FILE_PATH_PREFIX[]            = "core";
+const char DEFAULT_CORE_TRACE_FILE_PATH_SUFFIX[]            = "trace.txt";
+const char DEFAULT_BUS_TRACE_PATH[]                         = "bustrace.txt";
+// Default caches paths
+const char DEFAULT_DSRAM_CACHE_FILE_PATH_PREFIX[]           = "dsram";
+const char DEFAULT_TSRAM_CACHE_FILE_PATH_PREFIX[]           = "tsram";
+// Default stat paths
+const char DEFAULT_STATS_FILE_PATH_PREFIX[]                 = "stats";
+
+const ssize_t MAX_ERROR_MESSAGE_SIZE                                = 1000;
+const ssize_t MAX_PATH_SIZE                                         = 1000;
+
 // Define the CacheLine structure for DSRAM (1 word per line)
 typedef uint32_t CacheLine;  // Each cache line contains a 32-bit word (int)
 
