@@ -12,10 +12,9 @@ Core* core_create(int id) {
 
     // Initialize fields
     newCore->id = id;
-    newCore->pc_register_now = 0;
-    newCore->pc_register_updated = 0;
-    memset(newCore->registers_now, 0, sizeof(newCore->registers_now));
-    memset(newCore->registers_updated, 0, sizeof(newCore->registers_updated));
+    newCore->pc_register.now = 0;
+    newCore->pc_register.updated = 0;
+    memset(newCore->registers, 0, sizeof(newCore->registers));
     memset(newCore->InstructionMemory, 0, sizeof(newCore->InstructionMemory));
 
     // Allocate memory for caches
@@ -47,5 +46,14 @@ void core_destroy(Core* core) {
 
     // Free the Core structure itself
     free(core);
+}
+
+
+// Function to advance the core to the next cycle
+void advance_core(Core* core, bool keep_value) {
+    UPDATE_FLIP_FLOP(core->pc_register, keep_value);
+    for (int i = 0; i < 32; i++) {
+        UPDATE_FLIP_FLOP(core->registers[i], keep_value);
+    }
 }
 

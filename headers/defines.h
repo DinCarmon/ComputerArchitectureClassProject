@@ -1,7 +1,9 @@
 #pragma once
 
 #include <limits.h>
+#include <stdint.h>
 #include <stdbool.h>
+
 
 #define NUM_REQUESTORS 4  // Fixed number of BusRequestors
 
@@ -12,6 +14,8 @@
 #define BUS_INVALID 4   // The bus is in an invalid state (e.g., error state or not in use)
 #define BUS_FLUSH 5		// the bus is performing flush
 #define BUS_BEFORE_FLUSH 6 // the bus is goint to flush
+#define BUS_CACHE_INTERRUPTED 7 // The state when a cache in mode m interupted and sent data
+#define BUS_WRITE 8             // the bus is writing data
 
 
 // Constants for cache configuration
@@ -29,3 +33,14 @@
 #define SHARED             1
 #define EXCLUSIVE          2
 #define MODIFIED           3
+
+/**
+ * Cache block status for MESI protocol.
+ * The enum value represents its value as stated in a line in the TSRAM memory
+ */
+typedef enum cacheLineStatus {
+    Invalid         = 0,    // Cache block is invalid
+    Shared          = 1,     // Cache block is shared
+    Exclusive       = 2,  // Cache block is exclusive
+    Modified        = 3    // Cache block is modified
+} CacheLineStatus;
