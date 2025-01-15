@@ -63,5 +63,9 @@ void advance_core(Core* core, bool keep_value) {
     for (int i = 0; i < 32; i++) {
         UPDATE_FLIP_FLOP(core->registers[i], keep_value);
     }
+    UPDATE_FLIP_FLOP(core->snooper->busSnooperActive);
+    UPDATE_FLIP_FLOP(core->requestor->RequestGranted);
+    UPDATE_FLIP_FLOP(core->requestor->RequestTransaction);
+    UPDATE_FLIP_FLOP(core->requestor->LastCycle);
 }
 
