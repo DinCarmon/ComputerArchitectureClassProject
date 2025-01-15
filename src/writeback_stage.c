@@ -38,7 +38,7 @@ bool doWriteBackOperation(WriteBackStage* self)
     return false;       // write back never stalls
 }
 
-WriteBackStage createDecodeStage()
+WriteBackStage createDecodeStage() // xxx is the decode a mistake?
 {
     WriteBackStage stage;
     stage.doOperation = doWriteBackOperation;

@@ -30,6 +30,14 @@ Core* core_create(int id) {
     // Initialize the caches
     *newCore->cache_now = cache_create();
     *newCore->cache_updated = cache_create();
+    newCore->decode_stage = createDecodeStage();
+    newCore->memory_stage = createMemoryStage();
+    newCore->execute_stage = createExecuteStage();
+    newCore->fetch_stage = createFetchStage();
+    // xxx newCore->writeback_stage = createwritebackstage();
+
+    newCore->requestor = bus_requestor_create(newCore->id);
+    newCore->snooper = bus_snooper_create(newCore->id); 
 
     return newCore;
 }

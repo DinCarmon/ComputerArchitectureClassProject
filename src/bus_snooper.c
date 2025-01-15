@@ -4,15 +4,12 @@
 
 
 // Function to create and initialize a BusSnooper on the heap
-BusSnooper* bus_snooper_create(Core* my_core, BusManager* manager, int id) {
+BusSnooper* bus_snooper_create(int id) {
     BusSnooper* snooper = (BusSnooper*)malloc(sizeof(BusSnooper));
     if (!snooper) {
         fprintf(stderr, "Failed to allocate memory for BusSnooper.\n");
         exit(EXIT_FAILURE);
     }
-
-    snooper->my_core = my_core;
-    snooper->manager = manager;
     snooper->busSnooperActive.now = false;
     snooper->busSnooperActive.updated = false;
     snooper->addr_to_flush = 0;
@@ -23,12 +20,10 @@ BusSnooper* bus_snooper_create(Core* my_core, BusManager* manager, int id) {
 }
 
 // Function for the BusSnooper to snoop and react to bus commands
-void snoop(BusSnooper* snooper, Cache* cache) {
-    if (!snooper || !cache || !snooper->manager) {
+void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager) {
+    if (!snooper || !cache || !manager) {
         return; // Ensure all pointers are valid
     }
-
-    BusManager* manager = snooper->manager;
 
     // Check if the bus command is BUS_RD or BUS_RDX and the originating ID isn't the snooper's ID
     if ((manager->bus_cmd == BUS_RD || manager->bus_cmd == BUS_RDX) && manager->bus_origid != snooper->id) {
