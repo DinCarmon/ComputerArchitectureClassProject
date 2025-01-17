@@ -6,13 +6,11 @@
 
 // Definition of the BusRequestor struct
 typedef struct {
-    FlipFlop_bool RequestTransaction;     // indicator if the core wants to request a transaction 
     uint32_t operation;                       // Operation type (e.g., read, write, invalidate)
     uint32_t address;                        // Address associated with the bus request
     int start_cycle;                    // Cycle when the request started
-    FlipFlop_bool HaveTransactionOnBus;  // indicator if the core already has a transaction happening on the bus
-    FlipFlop_bool RequestGranted;       // is the request granted
-    FlipFlop_bool LastCycle;             // is it the last cycle of the request
+    FlipFlop_bool IsRequestOnBus;       // is the request granted
+    FlipFlop_bool LastCycle;             // is it the last cycle of the request. // XXX: Is S->M. Send BusRdX and update last cycle right now. Last cylce is context depndent.
     bool busRequestInTransaction_now;  // True if a bus request was already sent, waiting to end
     int priority;                     // Priority of the bus requestor
     int id;                           // Identifier for the BusRequestor
@@ -33,7 +31,8 @@ bool BusRequestorAlreadyOccupied(const BusRequestor* requestor);
 void bus_requestor_reset(BusRequestor* requestor);
 
 // Function to request an action from the bus (sets the request operation and address)
-bool ShuldRequestActionFromBus(BusRequestor* requestor, int addr, int BusActionType);
+// XXX: update function sigunature
+bool Enlist(BusRequestor* requestor, int addr, int BusActionType);
 
 // Function to perform the bus operation if granted
 //void DoOperation(BusRequestor* requestor, BusManager* manager, int cycle);

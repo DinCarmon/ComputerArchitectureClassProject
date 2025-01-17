@@ -22,7 +22,6 @@ CREATE_FLIP_FLOP_OF_TYPE(bool)
         if(!defaultKeepPreviousValue)                       \
             obj.updated = 0;                                \
         obj.now = obj.updated;                              \
-        obj.updated = 0;                                    \
    }
     
 

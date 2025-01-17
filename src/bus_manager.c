@@ -101,9 +101,11 @@ bool IsBusFree(const BusManager* manager) {
 // Function to arrange the priorities of the requestors based on the bus_origid
 void arrangePriorities(BusManager* manager) {
     if (!manager || manager->bus_origid < 0 || manager->bus_origid >= NUM_REQUESTORS) {
+        // XXX: exit is better.
         return;
     }
 
+    // XXX: should use bus origid updated when it is changed to flip flop
     int originIndex = manager->bus_origid;
     int originPriority = manager->requestors[originIndex]->priority;
 
@@ -157,6 +159,7 @@ void FinishBusEnlisting(BusManager* manager) {
 }
 
 void writeBusData(BusManager* manager, int32_t diff, bool read, Cache* cache) {
+    // XXX: update numbers
     int32_t cycle = diff - 17;
     int32_t read_address = manager->bus_addr - get_block_offset(manager->bus_addr) + cycle;
     if (diff >= 37 && read) {
@@ -175,6 +178,7 @@ void writeBusData(BusManager* manager, int32_t diff, bool read, Cache* cache) {
     }
 }
 
+// XXX: update to flip flops
 void WriteBusLines(BusManager* manager, BusRequestor* requestor) {
     manager->bus_cmd = requestor->operation;
     manager->bus_addr = requestor->address;
@@ -207,13 +211,14 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
     int32_t diff = currentCycle - manager->LastTransactionCycle;
 
     switch (manager->BusStatus.now) {
+        // XXX: update bus status correctly. state machine states are not coherent with bus possible statuses.
     case BUS_FREE:
 
-        FinishBusEnlisting(manager);
+        FinishBusEnlisting(manager); // XXX: Can be removed?
         // Change status only if core_turn is valid
         if (manager->core_turn != -1) {
             manager->BusStatus.updated = manager->bus_cmd; // Transition to the current bus command
-            manager->requestors[manager->core_turn]->RequestGranted.updated = true;
+            manager->requestors[manager->core_turn]->IsRequestOnBus.updated = true;
         }
         break;
 
@@ -222,6 +227,7 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
         // Transition to BUS_BEFORE_FLUSH
         manager->BusStatus.updated = BUS_BEFORE_FLUSH;
         manager->LastTransactionCycle = currentCycle;
+        // XXX: If memory stage only asked for busrdx without response update last cycle.
         break;
 
     case BUS_BEFORE_FLUSH:
@@ -236,7 +242,7 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
         }
         break;
 
-    case BUS_FLUSH: 
+    case BUS_FLUSH: // XXX: in other words, flush from main memory
         
         writeBusData(manager, diff, true, manager->caches[manager->bus_origid]);
         if (currentCycle - manager->LastTransactionCycle == 19) {
@@ -246,14 +252,17 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
         manager->numOfCyclesInSameStatus++;
         // Transition to BUS_FREE if the block size limit is reached
         if (manager->numOfCyclesInSameStatus == BLOCK_SIZE) {
+            // XXX: Need to check edge case where core intiator send a busrdx only to update other caches.
             main_memory_read(manager->main_memory, manager->caches[manager->bus_origid], manager->bus_addr, StateToUpdate(manager, manager->caches[manager->bus_origid])) ;
             bus_manager_reset(manager);
         }
         break;
 
     case BUS_CACHE_INTERRUPTED:
+        // XXX: There wont be a bus read on the bus. need to check the if according to the requestor.
         if(manager->bus_cmd == BUS_RD) {
             writeBusData(manager, diff, false, manager->caches[manager->bus_origid]);
+            // XXX: update number 19 / 20
             if (currentCycle - manager->LastTransactionCycle == 19) {
                 manager->requestors[manager->bus_origid]->LastCycle.updated = true;
             }
@@ -266,8 +275,11 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
             break;
         }
         else {          // cmd is bus_rdx
-            writeBusData(manager, diff, false, manager->caches[manager->bus_origid]);    //for the write to main
-            writeBusData(manager, diff, true, manager->caches[manager->bus_origid]);    //for the read from main
+            // XXX: Do a validate for the bus rdx
+            writeBusData(manager, diff, false, manager->caches[manager->bus_origid]);    // Write the cache response to main memory
+            writeBusData(manager, diff, true, manager->caches[manager->bus_origid]);    // Write cache response to the cache requestor
+            // XXX: Update numbers. and insert first if logic to thired if.
+            // XXX: total update here. need rerwriting.
             if (currentCycle - manager->LastTransactionCycle == 39) {
                 manager->requestors[manager->bus_origid]->LastCycle.updated = true;
             }
@@ -291,9 +303,10 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
 
 // Function to do the bus requestor operation, the function assumes that there is a need to call the bus
 // the function will return true if the operation is over and false if a stall is needed 
+// XXX: Delete it. obsolete.
 bool RequestorDoOperation(BusRequestor* requestor, BusManager* manager, uint32_t address, uint32_t cmd, int cycle) {
     bool BusFree = IsBusFree(manager);
-    if (!requestor->RequestGranted.now && BusFree) {
+    if (!requestor->IsRequestOnBus.now && BusFree) {
         manager->enlisted_requestors[requestor->id] = requestor;
         return false;
     }

@@ -7,15 +7,15 @@
 
 
 typedef struct {
-    uint32_t LastTransactionCycle;  // The last cycle a transaction occurred
+    uint32_t LastTransactionCycle;  // The last cycle a transaction occurred. // XXX: If other cache answers it should answer in less than 16 cycles.
     FlipFlop_int32_t BusStatus;   // status of the bus
-    FlipFlop_bool Interupted;       // is the bus on interrupted mode
+    FlipFlop_bool Interupted;       // is the bus on interrupted mode. If another cache wishes to answer.
     int32_t interuptor_id;          // id of the interupting core 
     bool bus_shared;           // True if the bus is in shared mode
     uint32_t bus_origid;            // Originating ID for the current transaction
     uint32_t bus_cmd;               // Command being executed on the bus
     uint32_t bus_addr;              // Address involved in the bus transaction
-    uint32_t bus_data;              // Data being transferred on the bus
+    uint32_t bus_data;              // Data being transferred on the bus. // XXX: Perhabs FlipFlop shall be more intuitive.
     uint32_t core_turn;             // Core that has the current turn
     uint32_t numOfCyclesInSameStatus; // cycels in one transaction
     BusRequestor* requestors[NUM_REQUESTORS]; // Fixed array of BusRequestors
@@ -34,6 +34,7 @@ void bus_manager_destroy(BusManager* manager);
 void bus_manager_reset(BusManager* manager);
 
 // Function to check if the bus is free
+// XXX: perhaps irrelevant to use. Perhaps one wishes to enlist and this is the last cycle of some requiest.
 bool IsBusFree(const BusManager* manager);
 
 // Function to arrange the priorities of the requestors based on the bus_origid

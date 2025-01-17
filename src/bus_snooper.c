@@ -40,14 +40,18 @@ void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager) {
                 return;
             }
 
+            // If the cache line is modified and the command is bus rdx, interupt bus, and change state to invalid
+            // XXX: missing
+
             // If the command is BUS_RDX and the address is in cache, invalidate the cache line
             if (manager->bus_cmd == BUS_RDX) {
                 update_state(address, cache, INVALID);
             }
 
-            // If the command is BUS_RD and the cache state is EXCLUSIVE, update to SHARED
+            // If the command is BUS_RD and the cache state is EXCLUSIVE or SHARED, update to SHARED
             if (manager->bus_cmd == BUS_RD) {
                 update_state(address, cache, SHARED);
+                // XXX: updatate to updated
                 manager->bus_shared = true;
             }
         }

@@ -64,8 +64,8 @@ void advance_core(Core* core, bool keep_value) {
         UPDATE_FLIP_FLOP(core->registers[i], keep_value);
     }
     UPDATE_FLIP_FLOP(core->snooper->busSnooperActive);
-    UPDATE_FLIP_FLOP(core->requestor->RequestGranted);
-    UPDATE_FLIP_FLOP(core->requestor->RequestTransaction);
+    UPDATE_FLIP_FLOP(core->requestor->IsRequestOnBus);
+    UPDATE_FLIP_FLOP(core->requestor->IsAlreadyAskedForBus);
     UPDATE_FLIP_FLOP(core->requestor->LastCycle);
 }
 
