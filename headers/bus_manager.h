@@ -7,15 +7,16 @@
 
 
 typedef struct {
-    uint32_t LastTransactionCycle;  // The last cycle a transaction occurred. // XXX: If other cache answers it should answer in less than 16 cycles.
+    uint32_t LastTransactionCycle;  // The last cycle a transaction occurred. // 
     FlipFlop_int32_t BusStatus;   // status of the bus
     FlipFlop_bool Interupted;       // is the bus on interrupted mode. If another cache wishes to answer.
     int32_t interuptor_id;          // id of the interupting core 
-    bool bus_shared;           // True if the bus is in shared mode
-    uint32_t bus_origid;            // Originating ID for the current transaction
-    uint32_t bus_cmd;               // Command being executed on the bus
-    uint32_t bus_addr;              // Address involved in the bus transaction
-    uint32_t bus_data;              // Data being transferred on the bus. // XXX: Perhabs FlipFlop shall be more intuitive.
+    FlipFlop_bool bus_shared;           // True if the bus is in shared mode
+    FlipFlop_int32_t bus_origid;            // Originating ID for the current transaction
+    FlipFlop_int32_t bus_cmd;               // Command being executed on the bus
+    FlipFlop_uint32_t bus_addr;              // Address involved in the bus transaction
+    FlipFlop_uint32_t bus_data;              // Data being transferred on the bus.
+    FlipFlop_uint32_t bus_line_addr;           // the address that will go on the bus lines
     uint32_t core_turn;             // Core that has the current turn
     uint32_t numOfCyclesInSameStatus; // cycels in one transaction
     BusRequestor* requestors[NUM_REQUESTORS]; // Fixed array of BusRequestors
@@ -39,9 +40,6 @@ bool IsBusFree(const BusManager* manager);
 
 // Function to arrange the priorities of the requestors based on the bus_origid
 void arrangePriorities(BusManager* manager);
-
-// Function to add a BusRequestor to the enlisted_requestors list
-void RequestForBus(BusManager* manager, BusRequestor* requestor);
 
 // Function to reset the enlisted_requestors list to zero
 void resetEnlistedRequestors(BusManager* manager);

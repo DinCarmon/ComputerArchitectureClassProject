@@ -96,13 +96,13 @@ typedef struct tagState {
  * BusOriginId - Identifies different originator of transaction on the bus
  * The enum value represents the value on the bus
  */
-typedef enum busOriginId {
-    Core0      = 0,
-    Core1      = 1,
-    Core2      = 2,
-    Core3      = 3,
-    MainMemory = 4
-} BusOriginId;
+//typedef enum busOriginId {
+//    Core0      = 0,
+//    Core1      = 1,
+//    Core2      = 2,
+//    Core3      = 3,
+//    MainMemory = 4
+//} BusOriginId;
 
 /**
  * Bus operation types for MESI protocol.

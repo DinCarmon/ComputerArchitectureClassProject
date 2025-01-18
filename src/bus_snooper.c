@@ -26,14 +26,14 @@ void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager) {
     }
 
     // Check if the bus command is BUS_RD or BUS_RDX and the originating ID isn't the snooper's ID
-    if ((manager->bus_cmd == BUS_RD || manager->bus_cmd == BUS_RDX) && manager->bus_origid != snooper->id) {
+    if ((manager->bus_cmd.now == BUS_RD || manager->bus_cmd.now == BUS_RDX) && manager->bus_origid.now != snooper->id) {
 
-        uint32_t address = manager->bus_addr;
+        uint32_t address = manager->bus_addr.now;
         int state = get_state(address, cache);
         if (in_cache(address, cache)) {
 
             // If the cache line is MODIFIED and the command is BUS_RD
-            if (state == MODIFIED && manager->bus_cmd == BUS_RD) {
+            if (state == MODIFIED && manager->bus_cmd.now == BUS_RD) {
                 manager->interuptor_id = snooper->id;
                 manager->Interupted.updated = true;
                 update_state(address, cache, Shared);
@@ -41,18 +41,22 @@ void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager) {
             }
 
             // If the cache line is modified and the command is bus rdx, interupt bus, and change state to invalid
-            // XXX: missing
+            if (state == MODIFIED && manager->bus_cmd.now == BUS_RDX) {
+                manager->interuptor_id = snooper->id;
+                manager->Interupted.updated = true;
+                update_state(address, cache, INVALID);
+                return;
+            }
 
             // If the command is BUS_RDX and the address is in cache, invalidate the cache line
-            if (manager->bus_cmd == BUS_RDX) {
+            if (manager->bus_cmd.now == BUS_RDX) {
                 update_state(address, cache, INVALID);
             }
 
             // If the command is BUS_RD and the cache state is EXCLUSIVE or SHARED, update to SHARED
-            if (manager->bus_cmd == BUS_RD) {
+            if (manager->bus_cmd.now == BUS_RD) {
                 update_state(address, cache, SHARED);
-                // XXX: updatate to updated
-                manager->bus_shared = true;
+                manager->bus_shared.updated = true;
             }
         }
 
