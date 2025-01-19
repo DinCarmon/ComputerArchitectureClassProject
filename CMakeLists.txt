@@ -51,7 +51,8 @@ include_directories(${CMAKE_SOURCE_DIR}/headers)
 set(SOURCE_FILES
     src/main.c
 
-    src/flip_flop.c
+    src/
+    .c
     src/instruction.c
 
     src/fetch_stage.c
@@ -73,4 +74,4 @@ set(SOURCE_FILES
 )
 
 # Create an executable target from the source files
-add_executable(ComputerArchitectureClassProjectExecutable ${SOURCE_FILES})
+add_executable(ComputerArchitectureClassProjectExecutable ${CMAKE_SOURCE_DIR}/src/main.c)

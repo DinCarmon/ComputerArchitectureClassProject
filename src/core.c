@@ -12,10 +12,9 @@ Core* core_create(int id) {
 
     // Initialize fields
     newCore->id = id;
-    newCore->pc_register_now = 0;
-    newCore->pc_register_updated = 0;
-    memset(newCore->registers_now, 0, sizeof(newCore->registers_now));
-    memset(newCore->registers_updated, 0, sizeof(newCore->registers_updated));
+    newCore->pc_register.now = 0;
+    newCore->pc_register.updated = 0;
+    memset(newCore->registers, 0, sizeof(newCore->registers));
     memset(newCore->InstructionMemory, 0, sizeof(newCore->InstructionMemory));
 
     // Allocate memory for caches
@@ -31,6 +30,14 @@ Core* core_create(int id) {
     // Initialize the caches
     *newCore->cache_now = cache_create();
     *newCore->cache_updated = cache_create();
+    newCore->decode_stage = createDecodeStage();
+    newCore->memory_stage = createMemoryStage();
+    newCore->execute_stage = createExecuteStage();
+    newCore->fetch_stage = createFetchStage();
+    // xxx newCore->writeback_stage = createwritebackstage();
+
+    newCore->requestor = bus_requestor_create(newCore->id);
+    newCore->snooper = bus_snooper_create(newCore->id); 
 
     return newCore;
 }
@@ -47,5 +54,18 @@ void core_destroy(Core* core) {
 
     // Free the Core structure itself
     free(core);
+}
+
+
+// Function to advance the core to the next cycle
+void advance_core(Core* core, bool keep_value) {
+    UPDATE_FLIP_FLOP(core->pc_register, keep_value);
+    for (int i = 0; i < 32; i++) {
+        UPDATE_FLIP_FLOP(core->registers[i], keep_value);
+    }
+    UPDATE_FLIP_FLOP(core->snooper->busSnooperActive);
+    UPDATE_FLIP_FLOP(core->requestor->IsRequestOnBus);
+    UPDATE_FLIP_FLOP(core->requestor->IsAlreadyAskedForBus);
+    UPDATE_FLIP_FLOP(core->requestor->LastCycle);
 }
 

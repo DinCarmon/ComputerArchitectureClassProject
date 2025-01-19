@@ -14,6 +14,7 @@ CREATE_FLIP_FLOP_OF_TYPE(uint32_t)
 CREATE_FLIP_FLOP_OF_TYPE(CacheLineStatus)
 CREATE_FLIP_FLOP_OF_TYPE(CacheLine)
 CREATE_FLIP_FLOP_OF_TYPE(TagState)
+CREATE_FLIP_FLOP_OF_TYPE(int32_t)
 CREATE_FLIP_FLOP_OF_TYPE(bool)
 
 #define UPDATE_FLIP_FLOP(obj, defaultKeepPreviousValue)     \
@@ -21,7 +22,6 @@ CREATE_FLIP_FLOP_OF_TYPE(bool)
         if(!defaultKeepPreviousValue)                       \
             obj.updated = 0;                                \
         obj.now = obj.updated;                              \
-        obj.updated = 0;                                    \
    }
     
 

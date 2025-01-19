@@ -8,21 +8,25 @@ Cache cache_create(void) {
 }
 
 // Function to extract the tag from an address  
-int get_tag(unsigned int address) {
+int get_tag(uint32_t address) {
     // Shift the address right by the number of bits for index and block offset,
     // then mask to ensure only the tag bits are kept (12 bits for tag).
     return (address >> (INDEX_SIZE + BLOCK_OFFSET_SIZE)) & ((1 << TAG_SIZE) - 1);
 }
 
+int get_block_offset(uint32_t address) {
+    return address & ((1 << BLOCK_OFFSET_SIZE) - 1);  // Get the block offset
+}
+
 // Function to extract the index from an address
-int get_index(unsigned int address) {
+int get_index(uint32_t address) {
     // Extract index by shifting the address right by the number of block offset bits,
     // then apply a mask to extract the index bits.
     return (address >> BLOCK_OFFSET_SIZE) & ((1 << INDEX_SIZE) - 1);  // Mask the index bits
 }
 
 // Function to check if an address is in the cache and return valid bits if the tag is found
-int in_cache(unsigned int address, Cache* cache) {
+int in_cache(uint32_t address, Cache* cache) {
     int index = get_index(address);  // Get the index from the address
     int tag = get_tag(address);  // Get the tag from the address
 
@@ -34,7 +38,7 @@ int in_cache(unsigned int address, Cache* cache) {
 }
 
 // Function to get state of address
-int get_state(unsigned int address, Cache* cache) {
+int get_state(uint32_t address, Cache* cache) {
     int index = get_index(address);  // Get the index from the address
     int tag = get_tag(address);  // Get the tag from the address
 
@@ -42,7 +46,7 @@ int get_state(unsigned int address, Cache* cache) {
 }
 
 // Function to read data from the cache (entire row, not just byte-wise)
-unsigned int read_cache(unsigned int address, Cache* cache) {
+uint32_t read_cache(uint32_t address, Cache* cache) {
     // First check if the address is in the cache
     if (in_cache(address, cache)) {
         int index = get_index(address);  // Get the index from the address
@@ -52,7 +56,7 @@ unsigned int read_cache(unsigned int address, Cache* cache) {
         int dsm_address = index * WORD_SIZE + block_offset;
 
         // Access the correct word in DSRAM
-        unsigned int word_data = cache->dsram[dsm_address];
+        uint32_t word_data = cache->dsram[dsm_address];
 
         return word_data;  // Return the appropriate word from the cache line
     }
@@ -60,32 +64,29 @@ unsigned int read_cache(unsigned int address, Cache* cache) {
 }
 
 // Function to write data to the cache (entire row, not just byte-wise)
-int write_cache(unsigned int address, Cache* cache, unsigned int data) {
-    // First check if the address is in the cache
-    if (in_cache(address, cache)) {
-        int index = get_index(address);  // Get the index from the address
-        int block_offset = address & ((1 << BLOCK_OFFSET_SIZE) - 1);  // Get the block offset
-        int tag = get_tag(address);  // Get the tag from the address
+int write_cache(uint32_t address, Cache* cache, uint32_t data) {
+    int index = get_index(address);  // Get the index from the address
+    int block_offset = get_block_offset(address);  // Get the block offset
+    int tag = get_tag(address);  // Get the tag from the address
 
-        // Calculate the address in DSRAM by using index * WORD_SIZE + block_offset
-        int dsm_address = index * WORD_SIZE + block_offset;
+    // Calculate the address in DSRAM by using index * WORD_SIZE + block_offset
+    int dsm_address = index * WORD_SIZE + block_offset;
 
-        // Write the modified row back to DSRAM
-        cache->dsram[dsm_address] = data;
+    // Write the modified row back to DSRAM
+    cache->dsram[dsm_address] = data;
 
-        cache->tsram[index].tag = tag;
+    cache->tsram[index].tag = tag;
 
-        // Set the cache line state to Modified
-        cache->tsram[index].state = MODIFIED;
 
-        return 1;  // Write success
-    }
-    return 0;  // Cache miss, return failure
+// XXX CACHE STAE    cache->tsram[index].state = MODIFIED;
+
+    return 1;  // Write success
+
 }
 
 
 // Function to update state in cache
-void update_state(unsigned int address, Cache* cache, int state) {
+void update_state(uint32_t address, Cache* cache, uint32_t state) {
     // First check if the address is in the cache
 
     int index = get_index(address);  // Get the index from the address

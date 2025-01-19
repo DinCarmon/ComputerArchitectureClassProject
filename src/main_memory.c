@@ -25,19 +25,35 @@ void main_memory_destroy(MainMemory* mem) {
 }
 
 // Function to read from MainMemory
-unsigned int main_memory_read(MainMemory* mem, unsigned int address) {
+void main_memory_read(MainMemory* mem, Cache* cache, uint32_t address, uint32_t state) {
     if (address >= MEMORY_SIZE) {
         fprintf(stderr, "Address out of bounds: %u\n", address);
         exit(EXIT_FAILURE);
     }
-    return mem->memory[address];
+    update_state(address, cache, state);
+    int offset = get_block_offset(address);
+    uint32_t mod_address = address - offset;
+    for (int i = 0; i < BLOCK_OFFSET_SIZE; ++i) {
+        mod_address = mod_address + i;
+        uint32_t data = mem->memory[mod_address];
+        int j = write_cache(mod_address, cache, data);
+
+    }
+
 }
 
 // Function to write to MainMemory
-void main_memory_write(MainMemory* mem, unsigned int address, unsigned int data) {
+void main_memory_write(MainMemory* mem, Cache* cache, uint32_t address) {
     if (address >= MEMORY_SIZE) {
         fprintf(stderr, "Address out of bounds: %u\n", address);
         exit(EXIT_FAILURE);
     }
-    mem->memory[address] = data;
+    int offset = get_block_offset(address);
+    uint32_t mod_address = address - offset;
+    for (int i = 0; i < BLOCK_OFFSET_SIZE; ++i) {
+        mod_address = mod_address + i;
+        uint32_t data = read_cache(mod_address, cache);
+        mem->memory[mod_address] = data;
+        
+    }
 }

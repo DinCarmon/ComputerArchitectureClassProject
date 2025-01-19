@@ -1,5 +1,7 @@
 #include "bus_requestor.h"
 
+struct BusManager;
+
 // Function to create and initialize a BusRequestor on the heap
 BusRequestor* bus_requestor_create(int id) {
     BusRequestor* requestor = (BusRequestor*)malloc(sizeof(BusRequestor));
@@ -12,9 +14,14 @@ BusRequestor* bus_requestor_create(int id) {
     requestor->operation = 0;  // Default operation
     requestor->address = 0;    // Default address
     requestor->start_cycle = 0; // Default start cycle
-    requestor->busRequestorOccupied_now = false;
-    requestor->busRequestorOccupied_updated = false;
-    requestor->busRequestInTransaction_now = false;
+    requestor->IsAlreadyAskedForBus.now = false;
+    requestor->IsAlreadyAskedForBus.updated = false;
+    requestor->HaveTransactionOnBus.now = false;
+    requestor->HaveTransactionOnBus.updated = false;
+    requestor->IsRequestOnBus.now = false;
+    requestor->IsRequestOnBus.updated = false;
+    requestor->LastCycle.now = false;
+    requestor->LastCycle.updated = false;
     requestor->priority = -1; // Default priority
     requestor->id = id; // Set the provided ID
 
@@ -23,9 +30,17 @@ BusRequestor* bus_requestor_create(int id) {
 
 // Function to check if the BusRequestor is already occupied
 bool BusRequestorAlreadyOccupied(const BusRequestor* requestor) {
-    return requestor->busRequestorOccupied_now;
+    return requestor->IsRequestOnBus.now;
 }
 
+// Function to check if the request is over, if it is resest the requestor
+bool BusRequestOver(BusRequestor* requestor) {
+    if (requestor->LastCycle.now) {
+        bus_requestor_reset(requestor);
+        return true;
+    }
+    return false;
+}
 
 // Function to reset the BusRequestor to its initial state
 void bus_requestor_reset(BusRequestor* requestor) {
@@ -37,23 +52,25 @@ void bus_requestor_reset(BusRequestor* requestor) {
     requestor->operation = 0;      // Reset operation
     requestor->address = 0;        // Reset address
     requestor->start_cycle = 0;    // Reset start cycle
-    requestor->busRequestorOccupied_now = false;
-    requestor->busRequestorOccupied_updated = false;
-    requestor->busRequestInTransaction_now = false;
-    requestor->priority = 0;       // Reset priority
+    requestor->IsAlreadyAskedForBus.now = false;
+    requestor->IsAlreadyAskedForBus.updated = false;
+    requestor->HaveTransactionOnBus.now = false;
+    requestor->HaveTransactionOnBus.updated = false;
+    requestor->IsRequestOnBus.now = false;
+    requestor->IsRequestOnBus.updated = false;
+    requestor->LastCycle.now = false;
+    requestor->LastCycle.updated = false;
+    //requestor->priority = 0;       // Reset priority
 }
 
 // Function to request an action from the bus (sets the request operation and address)
-void RequestActionFromBus(BusRequestor* requestor, int addr, int BusActionType) {
-    // Check if the requestor is free (not occupied)
-    if (!requestor->busRequestorOccupied_now) {
-        // Set the operation type and address if the requestor is free
-        requestor->operation = BusActionType;
-        requestor->address = addr;
+void Enlist(BusRequestor* requestor, int addr, int BusActionType, BusManager* manager) {
+    // Set the operation type and address if the requestor is free
+    requestor->operation = BusActionType;
+    requestor->address = addr;
 
-        // Mark the requestor as occupied
-        requestor->busRequestorOccupied_now = true;
-    }
+    // Mark the requestor as occupied
+    manager->enlisted_requestors[requestor->id] = requestor;
 }
 
 // Function to destroy a BusRequestor
