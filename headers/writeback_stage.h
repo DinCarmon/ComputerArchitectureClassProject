@@ -19,6 +19,6 @@ typedef struct writeBackStage
     bool (*doOperation)(struct writeBackStage* self);
 } WriteBackStage;
 
-WriteBackStage createDecodeStage();
+WriteBackStage createWriteBackStage();
 
 #endif

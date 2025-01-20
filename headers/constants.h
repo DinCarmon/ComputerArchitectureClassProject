@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #define  LOG2                                 (log(2))
+#define NUM_OF_CORES 4          // Num of cores in the architecture  //XXX i had errors when it was a const becuase its not a compile time constant
 const int32_t BYTE_SIZE_IN_BITS                 = 8;
 
 // Registers constants
@@ -22,7 +23,6 @@ const int32_t REGISTER_INDEX_FIELD_SIZE_IN_BITS = 4;            // (log(NUM_REGI
 const int32_t OPCODE_FIELD_SIZE_IN_BITS         = 8;
 
 
-const int32_t NUM_OF_CORES                      = 4;            // Num of cores in the architecture
 
 // Main memory constants
 const int32_t WORD_SIZE_IN_BITS                 = 32;
@@ -32,7 +32,7 @@ const int32_t MEMORY_DEPTH                      = 1048576;      // (pow(2, 20))
 const int32_t BUS_ORIGIN_ID_LINE_SIZE_IN_BITS   = 3;
 const int32_t BUS_CMD_LINE_SIZE_IN_BITS         = 2;
 const int32_t BUS_ADDRESS_LINE_SIZE_IN_BITS     = 20;           // (log(MEMORY_DEPTH) / LOG2)
-const int32_t BUS_DATA_LINE_SIZE_IN_BITS        = WORD_SIZE_IN_BITS;
+const int32_t BUS_DATA_LINE_SIZE_IN_BITS        = 32;
 const int32_t BUS_SHARED_LINE_SIZE_IN_BITS      = 1;
 
 
@@ -62,8 +62,8 @@ const char DEFAULT_TSRAM_CACHE_FILE_PATH_PREFIX[]           = "tsram";
 // Default stat paths
 const char DEFAULT_STATS_FILE_PATH_PREFIX[]                 = "stats";
 
-const ssize_t MAX_ERROR_MESSAGE_SIZE                                = 1000;
-const ssize_t MAX_PATH_SIZE                                         = 1000;
+const size_t MAX_ERROR_MESSAGE_SIZE                                = 1000;
+const size_t MAX_PATH_SIZE                                         = 1000;
 
 // Define the CacheLine structure for DSRAM (1 word per line)
 typedef uint32_t CacheLine;  // Each cache line contains a 32-bit word (int)
@@ -105,12 +105,12 @@ typedef enum cacheLineStatus {
     Modified        = 3    // Cache block is modified
 } CacheLineStatus;
 
-// Define the TSRAM memory - The data structure holding metadata on block in cache
-// structure: tag and state
-typedef struct tagState {
-    uint32_t            tag;       // Tag bits (12 bits)
-    CacheLineStatus     state;   // State bits (2 bits)
-} TagState;
+//// Define the TSRAM memory - The data structure holding metadata on block in cache
+//// structure: tag and state
+//typedef struct tagState {
+//    uint32_t            tag;       // Tag bits (12 bits)
+//    CacheLineStatus     state;   // State bits (2 bits)
+//} TagState;
 
 /**
  * BusOriginId - Identifies different originator of transaction on the bus

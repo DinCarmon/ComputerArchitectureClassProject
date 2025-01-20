@@ -111,7 +111,7 @@ bool doMemoryOperation(MemoryStage* self)
     return false;
 }
 
-MemoryStage createDecodeStage()
+MemoryStage createMemoryStage()
 {
     MemoryStage stage;
     stage.doOperation = doMemoryOperation;

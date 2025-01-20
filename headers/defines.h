@@ -34,13 +34,3 @@
 #define EXCLUSIVE          2
 #define MODIFIED           3
 
-/**
- * Cache block status for MESI protocol.
- * The enum value represents its value as stated in a line in the TSRAM memory
- */
-typedef enum cacheLineStatus {
-    Invalid         = 0,    // Cache block is invalid
-    Shared          = 1,     // Cache block is shared
-    Exclusive       = 2,  // Cache block is exclusive
-    Modified        = 3    // Cache block is modified
-} CacheLineStatus;

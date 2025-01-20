@@ -3,6 +3,7 @@
 #include "bus_requestor.h"
 #include "main_memory.h"
 #include "cache.h"
+#include "core.h"
 
 
 
@@ -21,12 +22,12 @@ typedef struct {
     uint32_t numOfCyclesInSameStatus; // cycels in one transaction
     BusRequestor* requestors[NUM_REQUESTORS]; // Fixed array of BusRequestors
     BusRequestor* enlisted_requestors[NUM_REQUESTORS]; // List of enlisted BusRequestors
-    Cache* caches[NUM_REQUESTORS];     // fiexed array of caches
+    Core* cores[NUM_REQUESTORS];     // fiexed array of caches
     MainMemory* main_memory;             // pointer to the main memory
 } BusManager;
 
 // Function to create and initialize a BusManager
-BusManager* bus_manager_create(BusRequestor** requestors, Cache** chaches, MainMemory* main_memory);
+BusManager* bus_manager_create(BusRequestor** requestors, Core** cores, MainMemory* main_memory);
 
 // Function to release manager memory
 void bus_manager_destroy(BusManager* manager);
@@ -57,4 +58,10 @@ void writeBusData(BusManager* manager, int32_t diff, bool read, Cache* cache);
 void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue);
 
 // Function to get the state that needed to be put in the cache
-uint32_t StateToUpdate(BusManager* manager, Cache* cache);
+uint32_t StateToUpdate(BusManager* manager);
+
+// Function to request an action from the bus (sets the request operation and address)
+void Enlist(BusRequestor* requestor, int addr, int BusActionType, BusManager* manager);
+
+// Function for the BusSnooper to snoop and react to bus commands
+void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager);

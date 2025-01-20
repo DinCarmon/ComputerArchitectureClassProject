@@ -60,9 +60,9 @@ set(SOURCE_FILES
     src/execute_stage.c
     src/memory_stage.c
     src/writeback_stage.c
-    
+    src/instruction.c
 
-
+    src/file_handler.c
     src/bus_manager.c
     src/bus_request.c
     src/bus_requestor.c

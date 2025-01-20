@@ -1,6 +1,5 @@
 #include "bus_requestor.h"
 
-struct BusManager;
 
 // Function to create and initialize a BusRequestor on the heap
 BusRequestor* bus_requestor_create(int id) {
@@ -63,15 +62,6 @@ void bus_requestor_reset(BusRequestor* requestor) {
     //requestor->priority = 0;       // Reset priority
 }
 
-// Function to request an action from the bus (sets the request operation and address)
-void Enlist(BusRequestor* requestor, int addr, int BusActionType, BusManager* manager) {
-    // Set the operation type and address if the requestor is free
-    requestor->operation = BusActionType;
-    requestor->address = addr;
-
-    // Mark the requestor as occupied
-    manager->enlisted_requestors[requestor->id] = requestor;
-}
 
 // Function to destroy a BusRequestor
 void bus_requestor_destroy(BusRequestor* requestor) {

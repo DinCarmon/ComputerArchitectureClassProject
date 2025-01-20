@@ -17,5 +17,4 @@ BusSnooper* bus_snooper_create(int id);
 // Function to destroy a BusSnooper and free its memory
 void bus_snooper_destroy(BusSnooper* snooper);
 
-// Function for the BusSnooper to snoop and react to bus commands
-void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager);
+

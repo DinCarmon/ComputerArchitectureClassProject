@@ -4,6 +4,8 @@
 #include "defines.h"
 #include "flip_flop.h"
 
+struct BusManager;
+
 // Definition of the BusRequestor struct
 typedef struct {
     uint32_t operation;                       // Operation type (e.g., read, write, invalidate)
@@ -29,9 +31,6 @@ bool BusRequestorAlreadyOccupied(const BusRequestor* requestor);
 
 // Function to reset the BusRequestor to its initial state
 void bus_requestor_reset(BusRequestor* requestor);
-
-// Function to request an action from the bus (sets the request operation and address)
-void Enlist(BusRequestor* requestor, int addr, int BusActionType, BusManager* manager);
 
 // Function to perform the bus operation if granted
 //void DoOperation(BusRequestor* requestor, BusManager* manager, int cycle);

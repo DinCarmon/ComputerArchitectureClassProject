@@ -207,6 +207,13 @@ void loadInstructionMemory(FILE* instructionMemoryFile, int** instructionMemory)
     }
 }
 
+void loadCoresImemory(Core** cores, FILE* instructionMemoryFiles[NUM_OF_CORES]) {
+    for (int i = 0; i < NUM_OF_CORES; i++)
+    {
+        loadInstructionMemory(instructionMemoryFiles[i], cores[i])
+    }
+}
+
 void loadMainMemory(FILE* mainMemoryFile, MainMemory* mem)
 {
     int address = 0;

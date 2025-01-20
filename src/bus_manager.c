@@ -1,7 +1,7 @@
 #include "bus_manager.h"
 
 
-BusManager* bus_manager_create(BusRequestor** requestors, Cache** caches, MainMemory* main_memory) {
+BusManager* bus_manager_create(BusRequestor** requestors, Core** cores, MainMemory* main_memory) {
     BusManager* manager = (BusManager*)malloc(sizeof(BusManager));
     if (!manager) {
         fprintf(stderr, "Failed to allocate memory for BusManager.\n");
@@ -41,9 +41,9 @@ BusManager* bus_manager_create(BusRequestor** requestors, Cache** caches, MainMe
         manager->requestors[i] = requestors[i];
     }
 
-    // Assign the provided caches
+    // Assign the provided cores
     for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        manager->caches[i] = caches[i];
+        manager->cores[i] = cores[i];
     }
 
     return manager;
@@ -161,6 +161,16 @@ void FinishBusEnlisting(BusManager* manager) {
 
 }
 
+// Function to request an action from the bus (sets the request operation and address)
+void Enlist(BusRequestor* requestor, int addr, int BusActionType, BusManager* manager) {
+    // Set the operation type and address if the requestor is free
+    requestor->operation = BusActionType;
+    requestor->address = addr;
+
+    // Mark the requestor as occupied
+    manager->enlisted_requestors[requestor->id] = requestor;
+}
+
 void writeBusData(BusManager* manager, int32_t diff, bool read, Cache* cache) {
     if (manager->bus_line_addr.now == 0) {
         int32_t read_address = manager->bus_addr - get_block_offset(manager->bus_addr);
@@ -195,7 +205,7 @@ void InterruptBus(BusManager* manager, int32_t interruptor_id) {
 }
 
 // Function to get the state that needed to be put in the cache
-uint32_t StateToUpdate(BusManager* manager, Cache* cache) {
+uint32_t StateToUpdate(BusManager* manager) {
     if (manager->bus_shared.now) {
         return SHARED;
     }
@@ -228,7 +238,7 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
         manager->BusStatus.updated = BUS_BEFORE_FLUSH;
         manager->LastTransactionCycle = currentCycle;
         // If memory stage only asked for busrdx without response update last cycle.
-        if (get_state(manager->bus_addr, manager->caches[manager->bus_origid]) == SHARED && manager->bus_cmd.now == BUS_RDX) {
+        if (get_state(manager->bus_addr, manager->cores[manager->bus_origid]->cache_now) == SHARED && manager->bus_cmd.now == BUS_RDX) {
             manager->requestors[manager->bus_origid.now]->LastCycle.updated = true;
             bus_manager_reset(manager);
             
@@ -250,12 +260,12 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
 
     case BUS_FLUSH: 
         
-        writeBusData(manager, diff, true, manager->caches[manager->bus_origid.now]);
+        writeBusData(manager, diff, true, manager->cores[manager->bus_origid.now]->cache_updated);
         // Increment the number of cycles in the same status
         manager->numOfCyclesInSameStatus++;
         // Transition to BUS_FREE if the block size limit is reached
         if (manager->numOfCyclesInSameStatus == BLOCK_SIZE) {
-            main_memory_read(manager->main_memory, manager->caches[manager->bus_origid.now], manager->bus_addr.now, StateToUpdate(manager, manager->caches[manager->bus_origid.now])) ;
+            main_memory_read(manager->main_memory, manager->cores[manager->bus_origid.now]->cache_updated, manager->bus_addr.now, StateToUpdate(manager)) ;
             manager->requestors[manager->bus_origid.now]->LastCycle.updated = true;
             bus_manager_reset(manager);
         }
@@ -263,12 +273,12 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
 
     case BUS_CACHE_INTERRUPTED:
         if(manager->requestors[manager->bus_origid.now]->operation == BUS_RD) {
-            writeBusData(manager, diff, false, manager->caches[manager->bus_origid.now]);
+            writeBusData(manager, diff, false, manager->cores[manager->bus_origid.now]->cache_now);
             // Increment the number of cycles in the same status
             manager->numOfCyclesInSameStatus++;
             if (manager->numOfCyclesInSameStatus == BLOCK_SIZE) {
-                main_memory_write(manager->main_memory, manager->caches[manager->interuptor_id], manager->bus_addr.now);
-                main_memory_read(manager->main_memory, manager->caches[manager->bus_origid.now], manager->bus_addr.now, StateToUpdate(manager, manager->caches[manager->bus_origid.now]));
+                main_memory_write(manager->main_memory, manager->cores[manager->interuptor_id]->cache_now, manager->bus_addr.now);
+                main_memory_read(manager->main_memory, manager->cores[manager->bus_origid.now]->cache_updated, manager->bus_addr.now, StateToUpdate(manager);
                 manager->requestors[manager->bus_origid.now]->LastCycle.updated = true;
                 bus_manager_reset(manager);
             }
@@ -306,6 +316,50 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
     UPDATE_FLIP_FLOP(manager->bus_line_addr, KeepValue);
     UPDATE_FLIP_FLOP(manager->bus_data, KeepValue);
 
+}
+
+// Function for the BusSnooper to snoop and react to bus commands
+void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager) {
+    if (!snooper || !cache || !manager) {
+        return; // Ensure all pointers are valid
+    }
+
+    // Check if the bus command is BUS_RD or BUS_RDX and the originating ID isn't the snooper's ID
+    if ((manager->bus_cmd.now == BUS_RD || manager->bus_cmd.now == BUS_RDX) && manager->bus_origid.now != snooper->id) {
+
+        uint32_t address = manager->bus_addr.now;
+        int state = get_state(address, cache);
+        if (in_cache(address, cache)) {
+
+            // If the cache line is MODIFIED and the command is BUS_RD
+            if (state == MODIFIED && manager->bus_cmd.now == BUS_RD) {
+                manager->interuptor_id = snooper->id;
+                manager->Interupted.updated = true;
+                update_state(address, cache, Shared);
+                return;
+            }
+
+            // If the cache line is modified and the command is bus rdx, interupt bus, and change state to invalid
+            if (state == MODIFIED && manager->bus_cmd.now == BUS_RDX) {
+                manager->interuptor_id = snooper->id;
+                manager->Interupted.updated = true;
+                update_state(address, cache, INVALID);
+                return;
+            }
+
+            // If the command is BUS_RDX and the address is in cache, invalidate the cache line
+            if (manager->bus_cmd.now == BUS_RDX) {
+                update_state(address, cache, INVALID);
+            }
+
+            // If the command is BUS_RD and the cache state is EXCLUSIVE or SHARED, update to SHARED
+            if (manager->bus_cmd.now == BUS_RD) {
+                update_state(address, cache, SHARED);
+                manager->bus_shared.updated = true;
+            }
+        }
+
+    }
 }
 
 // Function to do the bus requestor operation, the function assumes that there is a need to call the bus
