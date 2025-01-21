@@ -1,6 +1,6 @@
 #include "writeback_stage.h"
 
-void updateRegisterValues(WriteBackStage* self)
+void updateRegisterValues_writeback(WriteBackStage* self)
 {
     if (self->state.inputState.instruction.rdIdx == ZERO_REGISTER_INDEX ||
         self->state.inputState.instruction.rdIdx == IMMEDIATE_REGISTER_INDEX)
@@ -33,7 +33,7 @@ bool doWriteBackOperation(WriteBackStage* self)
     // done at this round
     self->state.outputState = self->state.inputState;
 
-    updateRegisterValues(self);
+	updateRegisterValues_writeback(self);
 
     return false;       // write back never stalls
 }

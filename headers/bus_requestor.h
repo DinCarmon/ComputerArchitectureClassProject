@@ -4,7 +4,6 @@
 #include "defines.h"
 #include "flip_flop.h"
 
-struct BusManager;
 
 // Definition of the BusRequestor struct
 typedef struct {

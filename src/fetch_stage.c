@@ -1,19 +1,20 @@
 #include "fetch_stage.h"
+#include "instruction.h"
 
 bool doFetchOperation(FetchStage* self)
 {
-    uint32_t instructionCodex = (self->state.myCore->instructionMemory[self->state.myCore->pcRegister.now]).now;
+    uint32_t instructionCodex = (self->state.myCore->InstructionMemory[self->state.myCore->pc_register.now]);
     Instruction inst = createInstruction(instructionCodex);
 
     self->state.outputState.instruction = inst;
-    self->state.outputState.instructionAddress = self->state.myCore->pcRegister.now;
+    self->state.outputState.instructionAddress = self->state.myCore->pc_register.now;
 
     // If the instruction fetched is the halt instruction stop fetching advancing instructions.
     // Let the pc register stay in halt.
     if (inst.opcode != Halt)
-        self->state.myCore->pcRegister.updated = self->state.myCore->pcRegister.now + 1;
+        self->state.myCore->pc_register.updated = self->state.myCore->pc_register.now + 1;
     else
-        self->state.myCore->pcRegister.updated = self->state.myCore->pcRegister.now;
+        self->state.myCore->pc_register.updated = self->state.myCore->pc_register.now;
     
     return false;
 }

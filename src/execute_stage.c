@@ -74,7 +74,7 @@ void performALUOperation(ExecuteStage* self)
             break;
         case Mul:
             self->state.outputState.aluOperationOutput =
-                intTouint(uintToInt(self->state.inputState.rsValue *
+                intTouint(uintToInt(self->state.inputState.rsValue) *
                           uintToInt(self->state.inputState.rtValue));
             break;
         case And:

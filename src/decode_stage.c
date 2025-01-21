@@ -1,6 +1,6 @@
 #include "decode_stage.h"
 
-void updateRegisterValues(DecodeStage* self)
+void updateRegisterValues_decode(DecodeStage* self)
 {
     Instruction inst = self->state.inputState.instruction;
 
@@ -100,17 +100,17 @@ bool check_RAW_Hazard(Instruction instNow, Instruction unfinishedInst)
     return false;
 }
 
-bool isDataHazard(DecodeStage* self)
+bool isDataHazard(DecodeStage* self, Instruction execInst, Instruction memInst, Instruction wbInst)
 {
-    return  check_RAW_Hazard(self->state.inputState.instruction, self->state.myCore.EXECUTE.state.inputState.instruction) ||
-            check_RAW_Hazard(self->state.inputState.instruction, self->state.myCore.MEMORY.state.inputState.instruction) ||
-            check_RAW_Hazard(self->state.inputState.instruction, self->state.myCore.WRITEBACK.state.inputState.instruction);
+    return  check_RAW_Hazard(self->state.inputState.instruction, execInst) ||
+            check_RAW_Hazard(self->state.inputState.instruction, memInst) ||
+            check_RAW_Hazard(self->state.inputState.instruction, wbInst); 
 }
 
 void updatePCtoRdValue(DecodeStage* self)
 {
     // Update PC to branch target (lower 10 bits of rd)
-    self->state.myCore->pcRegister.updated = self->state.outputState.rdValue & 0x3FF;
+    self->state.myCore->pc_register.updated = self->state.outputState.rdValue & 0x3FF;
 }
 
 /**
@@ -120,11 +120,11 @@ void updatePCtoRdValue(DecodeStage* self)
  */
 void handleEdgeCaseOfHaltInDelaySlot(DecodeStage* self)
 {
-    uint32_t fetchedInstructionCodex = (self->state.myCore->instructionMemory[self->state.myCore->pcRegister.now]).now;
+    uint32_t fetchedInstructionCodex = self->state.myCore->InstructionMemory[self->state.myCore->pc_register.now];
     Instruction fetchedInst = createInstruction(fetchedInstructionCodex);
     if (fetchedInst.opcode == Halt)
     {
-        self->state.myCore->pcRegister.updated = self->state.myCore->pcRegister.now;
+        self->state.myCore->pc_register.updated = self->state.myCore->pc_register.now;
     }
 }
 
@@ -183,7 +183,7 @@ void doOperationsOfJumpInstructions(DecodeStage* self)
         case Jal:
         {
             updatePCtoRdValue(self);
-            self->state.myCore->registers[15].updated = self->state.myCore->pcRegister.now + 1;
+            self->state.myCore->registers[15].updated = self->state.myCore->pc_register.now + 1;
             break;
         }
         default:
@@ -196,23 +196,24 @@ void doOperationsOfJumpInstructions(DecodeStage* self)
         self->state.inputState.instruction.opcode == Ble ||
         self->state.inputState.instruction.opcode == Bgt ||
         self->state.inputState.instruction.opcode == Bge ||
-        self->state.inputState.instruction.opcode == Jal ||)
+        self->state.inputState.instruction.opcode == Jal )
     {
         handleEdgeCaseOfHaltInDelaySlot(self);
     }
 }
 
-bool doDecodeOperation(DecodeStage* self)
+bool doDecodeOperation(DecodeStage* self, Instruction execInst, Instruction memInst, Instruction wbInst)
+//to din i edited so it will need get these extra parameters due to circular dependency
 {
     // First copy the output state from the input state.
     // Later update the output state with operation needed to be
     // done at this round
     self->state.outputState = self->state.inputState;
 
-    if (isDataHazard(self))
+    if (isDataHazard(self, execInst, memInst, wbInst))
         return true;
 
-    updateRegisterValues(self);
+    updateRegisterValues_decode(self);
 
     doOperationsOfJumpInstructions(self);
 

@@ -1,7 +1,6 @@
 #pragma once
-#include "defines.h"  
-#include "bus_manager.h"
-#include "cache.h"
+#include "defines.h" 
+#include "flip_flop.h"
 
 // BusSnooper structure definition
 typedef struct {

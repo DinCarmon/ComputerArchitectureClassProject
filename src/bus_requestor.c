@@ -13,10 +13,6 @@ BusRequestor* bus_requestor_create(int id) {
     requestor->operation = 0;  // Default operation
     requestor->address = 0;    // Default address
     requestor->start_cycle = 0; // Default start cycle
-    requestor->IsAlreadyAskedForBus.now = false;
-    requestor->IsAlreadyAskedForBus.updated = false;
-    requestor->HaveTransactionOnBus.now = false;
-    requestor->HaveTransactionOnBus.updated = false;
     requestor->IsRequestOnBus.now = false;
     requestor->IsRequestOnBus.updated = false;
     requestor->LastCycle.now = false;
@@ -51,10 +47,6 @@ void bus_requestor_reset(BusRequestor* requestor) {
     requestor->operation = 0;      // Reset operation
     requestor->address = 0;        // Reset address
     requestor->start_cycle = 0;    // Reset start cycle
-    requestor->IsAlreadyAskedForBus.now = false;
-    requestor->IsAlreadyAskedForBus.updated = false;
-    requestor->HaveTransactionOnBus.now = false;
-    requestor->HaveTransactionOnBus.updated = false;
     requestor->IsRequestOnBus.now = false;
     requestor->IsRequestOnBus.updated = false;
     requestor->LastCycle.now = false;

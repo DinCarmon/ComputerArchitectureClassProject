@@ -5,13 +5,14 @@
 #include "cache.h"  // Include the Cache definition
 #include "flip_flop.h"
 #include "defines.h"
-#include "writeback_stage.h"
-#include "fetch_stage.h"
-#include "decode_stage.h"
-#include "execute_stage.h"
-#include "memory_stage.h"
+//#include "writeback_stage.h"
+//#include "fetch_stage.h"
+//#include "decode_stage.h"
+//#include "execute_stage.h"
+//#include "memory_stage.h"
 #include "bus_snooper.h"
-#include "bus_request.h"
+#include "bus_requestor.h"
+
 
 
 // Define the Core struct
@@ -22,11 +23,11 @@ typedef struct {
     uint32_t InstructionMemory[1024];  // Instruction memory array
     Cache* cache_now;                // Pointer to the current cache
     Cache* cache_updated;            // Pointer to the updated cache
-    WriteBackStage writeback_stage;
-    ExecuteStage execute_stage;
-    DecodeStage decode_stage;
-    FetchStage fetch_stage;
-    MemoryStage memory_stage;
+    //WriteBackStage writeback_stage;
+    //ExecuteStage execute_stage;
+    //DecodeStage decode_stage;
+    //FetchStage fetch_stage;
+    //MemoryStage memory_stage;
     BusRequestor* requestor;
     BusSnooper* snooper;
 } Core;

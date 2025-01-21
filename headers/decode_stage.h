@@ -16,7 +16,7 @@ typedef struct decodeStage
     /**
      * @return Should stall?
      */
-    bool (*doOperation)(struct decodeStage* self);
+    bool (*doOperation)(struct decodeStage* self, Instruction execInst, Instruction memInst, Instruction wbInst);
 } DecodeStage;
 
 DecodeStage createDecodeStage();

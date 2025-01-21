@@ -30,23 +30,23 @@ int main(int argc, char* argv[]) {
         statsFiles[NUM_OF_CORES]);
 
     ////create an array for the cores in the simulator
-    //Core** cores = create_cores_array(NUM_OF_CORES);
+    Core** cores = create_cores_array(NUM_OF_CORES);
 
     //// Create an array of pointers to those existing requestors
-    //BusRequestor** requestors = create_busrequestors_array(cores, NUM_OF_CORES);
+    BusRequestor** requestors = create_busrequestors_array(cores, NUM_OF_CORES);
 
     ////creating the main memory for the sim
-    //MainMemory* main_memory = create_main_memory();
+    MainMemory* main_memory = create_main_memory();
 
     //// load main memory
-    //loadMainMemory(mainMemoryInputFile, main_memory);
+    loadMainMemory(mainMemoryInputFile, main_memory);
 
     //// create bus manager
-    //BusManager* manager = bus_manager_create(requestors, cores, main_memory);
+    BusManager* manager = bus_manager_create(requestors, cores, main_memory);
 
     //// load all cores i memory
-    //loadCoresImemory(cores, instructionMemoryFiles);
+    loadCoresImemory(cores, instructionMemoryFiles);
 
-    //
+	//need to add corePipeLine creation
 
 }

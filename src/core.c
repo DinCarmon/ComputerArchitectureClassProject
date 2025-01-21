@@ -30,16 +30,16 @@ Core* core_create(int id) {
     // Initialize the caches
     *newCore->cache_now = cache_create();
     *newCore->cache_updated = cache_create();
-    newCore->decode_stage = createDecodeStage();
-    newCore->decode_stage.state->myCore = newCore;
-    newCore->memory_stage = createMemoryStage();
-    newCore->memory_stage.state->myCore = newCore;
-    newCore->execute_stage = createExecuteStage();
-    newCore->execute_stage.state->myCore = newCore;
-    newCore->fetch_stage = createFetchStage();
-    newCore->fetch_stage.state->myCore = newCore;
-    newCore->writeback_stage = createWriteBackStage();
-    newCore->writeback_stage.state->myCore = newCore;
+    //newCore->decode_stage = createDecodeStage();
+    //newCore->decode_stage.state.myCore = newCore;
+    //newCore->memory_stage = createMemoryStage();
+    //newCore->memory_stage.state.myCore = newCore;
+    //newCore->execute_stage = createExecuteStage();
+    //newCore->execute_stage.state.myCore = newCore;
+    //newCore->fetch_stage = createFetchStage();
+    //newCore->fetch_stage.state.myCore = newCore;
+    //newCore->writeback_stage = createWriteBackStage();
+    //newCore->writeback_stage.state.myCore = newCore;
 
     newCore->requestor = bus_requestor_create(newCore->id);
     newCore->snooper = bus_snooper_create(newCore->id); 
@@ -107,10 +107,9 @@ void advance_core(Core* core, bool keep_value) {
     for (int i = 0; i < 32; i++) {
         UPDATE_FLIP_FLOP(core->registers[i], keep_value);
     }
-    UPDATE_FLIP_FLOP(core->snooper->busSnooperActive);
-    UPDATE_FLIP_FLOP(core->requestor->IsRequestOnBus);
-    UPDATE_FLIP_FLOP(core->requestor->IsAlreadyAskedForBus);
-    UPDATE_FLIP_FLOP(core->requestor->LastCycle);
+    UPDATE_FLIP_FLOP(core->snooper->busSnooperActive, true);
+    UPDATE_FLIP_FLOP(core->requestor->IsRequestOnBus, true);
+    UPDATE_FLIP_FLOP(core->requestor->LastCycle, true);
 
     core->cache_now = core->cache_updated;
 }

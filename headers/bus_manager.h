@@ -4,6 +4,7 @@
 #include "main_memory.h"
 #include "cache.h"
 #include "core.h"
+#include "flip_flop.h"
 
 
 

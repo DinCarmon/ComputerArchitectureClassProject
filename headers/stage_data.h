@@ -8,7 +8,7 @@
  * StageData - Contains all data needed for a pipeline stage
  */
 typedef struct stageData {
-    struct core* myCore;                // Core identifier
+    Core* myCore;                // Core identifier
     PipelineObjectState inputState;     // Input state to the stage
     PipelineObjectState outputState;    // Output state from the stage
 

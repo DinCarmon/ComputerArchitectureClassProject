@@ -172,11 +172,12 @@ void Enlist(BusRequestor* requestor, int addr, int BusActionType, BusManager* ma
 }
 
 void writeBusData(BusManager* manager, int32_t diff, bool read, Cache* cache) {
+    uint32_t read_address;
     if (manager->bus_line_addr.now == 0) {
-        int32_t read_address = manager->bus_addr - get_block_offset(manager->bus_addr);
+        read_address = manager->bus_addr.now - get_block_offset(manager->bus_addr.now);
     }
     else {
-        int32_t read_address = manager->bus_line_addr.now +1
+        read_address = manager->bus_line_addr.now + 1;
     }
 
     if (read) {
@@ -238,7 +239,7 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
         manager->BusStatus.updated = BUS_BEFORE_FLUSH;
         manager->LastTransactionCycle = currentCycle;
         // If memory stage only asked for busrdx without response update last cycle.
-        if (get_state(manager->bus_addr, manager->cores[manager->bus_origid]->cache_now) == SHARED && manager->bus_cmd.now == BUS_RDX) {
+        if (get_state(manager->bus_addr.now, manager->cores[manager->bus_origid.now]->cache_now) == SHARED && manager->bus_cmd.now == BUS_RDX) {
             manager->requestors[manager->bus_origid.now]->LastCycle.updated = true;
             bus_manager_reset(manager);
             
@@ -254,7 +255,7 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
         // Transition to BUS_FLUSH if 15 cycles have passed
         if (currentCycle - manager->LastTransactionCycle >= 15) {
             manager->BusStatus.updated = BUS_FLUSH;
-            manager->cmd.updated = BUS_FLUSH;
+            manager->bus_cmd.updated = BUS_FLUSH;
         }
         break;
 
@@ -278,7 +279,7 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
             manager->numOfCyclesInSameStatus++;
             if (manager->numOfCyclesInSameStatus == BLOCK_SIZE) {
                 main_memory_write(manager->main_memory, manager->cores[manager->interuptor_id]->cache_now, manager->bus_addr.now);
-                main_memory_read(manager->main_memory, manager->cores[manager->bus_origid.now]->cache_updated, manager->bus_addr.now, StateToUpdate(manager);
+                main_memory_read(manager->main_memory, manager->cores[manager->bus_origid.now]->cache_updated, manager->bus_addr.now, StateToUpdate(manager));
                 manager->requestors[manager->bus_origid.now]->LastCycle.updated = true;
                 bus_manager_reset(manager);
             }
@@ -302,7 +303,7 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
             //    bus_manager_reset(manager);
             //}
             //break;
-        }
+        //}
 
     default:
         break;
