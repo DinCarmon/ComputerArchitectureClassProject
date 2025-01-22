@@ -5,13 +5,15 @@
 #include <stdbool.h>
 #include "stage_data.h"
 
+struct stageData;
+
 /**
  * Execute Stage - Third stage in the pipeline
  * Responsible for performing ALU operations
  */
 typedef struct executeStage
 {
-    StageData state;
+    struct stageData state;
 
     /**
      * @return Should stall?

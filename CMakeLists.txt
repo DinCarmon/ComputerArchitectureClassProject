@@ -64,6 +64,7 @@ set(SOURCE_FILES
     src/cache_block.c
     src/core.c
     src/main_memory.c
+    src/simulator.c
 )
 
 # Create an executable target from the source files

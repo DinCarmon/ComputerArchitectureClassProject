@@ -6,9 +6,9 @@
 #include <stdint.h>   // for uint32_t
 
 #include "constants.h"
-#include "core.h"
 #include "main_memory.h"
-#include "core_pipeline.h"
+
+struct core;
 
 /**
  * Opens a file with the given path and mode.
@@ -85,7 +85,7 @@ void writeInstructionAddressToFile(FILE* file, uint32_t instructionAddress);
  * @param statusCacheFiles        Array of FILE pointers for status cache outputs.
  * @param statsFiles              Array of FILE pointers for stats outputs.
  */
-void getAllFileDescritpors(int argc,
+void get_all_file_descriptors(int argc,
     char* argv[],
     FILE* instructionMemoryFiles[NUM_OF_CORES],
     FILE** mainMemoryInputFile,
@@ -136,9 +136,9 @@ void writeRegisterFile(FILE* registerFile, uint32_t* registerArr);
  * @param core            Pointer to the Core whose state is being traced.
  * @param cycle           The current cycle number (for logging).
  */
-void writeCoreTrace(FILE* coreTraceFile, Core* core, CorePipeLine* pipeline, uint32_t cycle);
+void writeCoreTrace(FILE* coreTraceFile, Core* core, uint32_t cycle);
 
 // load instructionmemory for all cores
-void loadCoresImemory(Core (*cores)[NUM_OF_CORES], FILE* instructionMemoryFiles[NUM_OF_CORES]);
+void loadCoresImemory(struct core (*cores)[NUM_OF_CORES], FILE* instructionMemoryFiles[NUM_OF_CORES]);
 
 #endif /* FILE_HANDLER_H */

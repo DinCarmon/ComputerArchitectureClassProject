@@ -5,7 +5,6 @@
 
 #include "constants.h"
 #include "core.h"
-#include "core_pipeline.h"
 #include "main_memory.h"
 #include "file_handler.h"
 
@@ -118,7 +117,7 @@ void writeInstructionAddressToFile(FILE* file, uint32_t instructionAddress)
     fprintf(file, "%s", addressInHex);
 }
 
-void getAllFileDescritpors(int argc,
+void get_all_file_descriptors(int argc,
                            char* argv[],
                            FILE* instructionMemoryFiles[NUM_OF_CORES],
                            FILE** mainMemoryInputFile,
@@ -266,7 +265,7 @@ void writeRegisterFile(FILE* registerFile, uint32_t* registerArr)
     }
 }
 
-void writeCoreTrace(FILE* coreTraceFile,Core* core, CorePipeLine* pipeline, uint32_t cycle)
+void writeCoreTrace(FILE* coreTraceFile,Core* core, uint32_t cycle)
 {
     char cycleStr[MAX_PATH_SIZE] = "";
     snprintf(cycleStr, sizeof(cycleStr), "%d", cycle);
@@ -275,23 +274,23 @@ void writeCoreTrace(FILE* coreTraceFile,Core* core, CorePipeLine* pipeline, uint
 
     char instructionAddressTmpString[4];
     instructionAddressTmpString[3] = '\0';
-    numberToHexString(pipeline->fetch_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
+    numberToHexString(core->fetch_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
     fprintf(coreTraceFile, "%s", instructionAddressTmpString);
     fprintf(coreTraceFile, " ");
 
-    numberToHexString(pipeline->decode_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
+    numberToHexString(core->decode_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
     fprintf(coreTraceFile, "%s", instructionAddressTmpString);
     fprintf(coreTraceFile, " ");
 
-    numberToHexString(pipeline->execute_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
+    numberToHexString(core->execute_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
     fprintf(coreTraceFile, "%s", instructionAddressTmpString);
     fprintf(coreTraceFile, " ");
 
-    numberToHexString(pipeline->memory_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
+    numberToHexString(core->memory_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
     fprintf(coreTraceFile, "%s", instructionAddressTmpString);
     fprintf(coreTraceFile, " ");
 
-    numberToHexString(pipeline->writeback_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
+    numberToHexString(core->writeback_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
     fprintf(coreTraceFile, "%s", instructionAddressTmpString);
 
     for(int i = 2; i < NUM_REGISTERS_PER_CORE; i++)

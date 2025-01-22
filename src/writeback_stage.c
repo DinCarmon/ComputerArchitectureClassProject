@@ -1,4 +1,5 @@
 #include "writeback_stage.h"
+#include "core.h"
 
 void updateRegisterValues_writeback(WriteBackStage* self)
 {
@@ -38,7 +39,7 @@ bool doWriteBackOperation(WriteBackStage* self)
     return false;       // write back never stalls
 }
 
-WriteBackStage createWriteBackStage() // xxx is the decode a mistake?
+WriteBackStage createWriteBackStage()
 {
     WriteBackStage stage;
     stage.doOperation = doWriteBackOperation;

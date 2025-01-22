@@ -85,11 +85,9 @@ int write_cache(uint32_t address, Cache* cache, uint32_t data) {
 
     cache->tsram[index].tag = tag;
 
-
-// XXX CACHE STAE    cache->tsram[index].state = MODIFIED;
+    cache->tsram[index].state = MODIFIED;
 
     return 1;  // Write success
-
 }
 
 

@@ -11,7 +11,7 @@
  */
 typedef struct writeBackStage
 {
-    StageData state;
+    struct stageData state;
 
     /**
      * @return Should stall?

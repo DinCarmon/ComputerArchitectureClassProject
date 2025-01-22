@@ -1,5 +1,6 @@
 #include "fetch_stage.h"
 #include "instruction.h"
+#include "core.h"
 
 bool doFetchOperation(FetchStage* self)
 {

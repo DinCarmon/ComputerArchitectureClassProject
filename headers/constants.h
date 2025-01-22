@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define LOG2                                 (log(2))
-#define NUM_OF_CORES                         4          // Num of cores in the architecture  //XXX i had errors when it was a const becuase its not a compile time constant
+#define NUM_OF_CORES                         4            // Num of cores in the architecture
 #define BYTE_SIZE_IN_BITS                    8
 
 // Registers constants

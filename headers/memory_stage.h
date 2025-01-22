@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include "stage_data.h"
 #include "cache_block.h"
-#include "bus_manager.h"
 
 /**
  * Memory Stage - Fourth stage in the pipeline
@@ -13,12 +12,12 @@
  */
 typedef struct memoryStage
 {
-    StageData state;
+    struct stageData state;
 
     /**
      * @return Should stall?
      */
-    bool (*doOperation)(struct memoryStage* self, BusManager* manager);
+    bool (*doOperation)(struct memoryStage* self);
 } MemoryStage;
 
 MemoryStage createMemoryStage();

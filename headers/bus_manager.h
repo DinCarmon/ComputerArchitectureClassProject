@@ -5,37 +5,35 @@
 #include "main_memory.h"
 #include "constants.h"
 #include "cache_block.h"
-#include "core.h"
 #include "flip_flop.h"
 
-typedef struct {
-    uint32_t LastTransactionCycle;  // The last cycle a transaction occurred. // 
-    FlipFlop_int32_t BusStatus;   // status of the bus
-    FlipFlop_bool Interupted;       // is the bus on interrupted mode. If another cache wishes to answer.
-    int32_t interuptor_id;          // id of the interupting core 
-    FlipFlop_bool bus_shared;           // True if the bus is in shared mode
-    FlipFlop_int32_t bus_origid;            // Originating ID for the current transaction
-    FlipFlop_int32_t bus_cmd;               // Command being executed on the bus
-    FlipFlop_uint32_t bus_addr;              // Address involved in the bus transaction
-    FlipFlop_uint32_t bus_data;              // Data being transferred on the bus.
-    FlipFlop_uint32_t bus_line_addr;           // the address that will go on the bus lines
-    int32_t core_turn;             // Core that has the current turn
-    uint32_t numOfCyclesInSameStatus; // cycels in one transaction
-    BusRequestor* requestors[NUM_OF_CORES]; // Fixed array of BusRequestors
-    BusRequestor* enlisted_requestors[NUM_OF_CORES]; // List of enlisted BusRequestors
-    Core* cores[NUM_OF_CORES];     // fiexed array of caches
-    MainMemory* main_memory;             // pointer to the main memory
+struct core;
+
+typedef struct busManager {
+    uint32_t LastTransactionCycle;                      // The last cycle a transaction occurred. // 
+    FlipFlop_int32_t BusStatus;                         // status of the bus
+    FlipFlop_bool Interupted;                           // is the bus on interrupted mode. If another cache wishes to answer.
+    int32_t interuptor_id;                              // id of the interupting core 
+    FlipFlop_bool bus_shared;                           // True if the bus is in shared mode
+    FlipFlop_int32_t bus_origid;                        // Originating ID for the current transaction
+    FlipFlop_int32_t bus_cmd;                           // Command being executed on the bus
+    FlipFlop_uint32_t bus_addr;                         // Address involved in the bus transaction
+    FlipFlop_uint32_t bus_data;                         // Data being transferred on the bus.
+    FlipFlop_uint32_t bus_line_addr;                    // the address that will go on the bus lines
+    int32_t core_turn;                                  // Core that has the current turn
+    uint32_t numOfCyclesInSameStatus;                   // cycels in one transaction
+    BusRequestor* requestors[NUM_OF_CORES];             // Fixed array of BusRequestors
+    BusRequestor* enlisted_requestors[NUM_OF_CORES];    // List of enlisted BusRequestors
+    struct core* cores[NUM_OF_CORES];                   // fixed array of caches
+    MainMemory* main_memory;                            // pointer to the main memory
 } BusManager;
 
 // Function to create and initialize a BusManager
-BusManager bus_manager_create(BusRequestor** requestors, Core (*cores)[NUM_OF_CORES], MainMemory* main_memory);
+BusManager bus_manager_create(struct core (*cores)[NUM_OF_CORES], MainMemory* main_memory);
 
 // Function to reset the BusManager (e.g., after a transaction)
 void bus_manager_reset(BusManager* manager);
 
-// Function to check if the bus is free
-// XXX: perhaps irrelevant to use. Perhaps one wishes to enlist and this is the last cycle of some requiest.
-bool IsBusFree(const BusManager* manager);
 
 // Function to arrange the priorities of the requestors based on the bus_origid
 void arrangePriorities(BusManager* manager);
@@ -61,7 +59,6 @@ uint32_t StateToUpdate(BusManager* manager);
 // Function to request an action from the bus (sets the request operation and address)
 void Enlist(BusRequestor* requestor, int addr, int BusActionType, BusManager* manager);
 
-// Function for the BusSnooper to snoop and react to bus commands
-void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager);
+
 
 #endif

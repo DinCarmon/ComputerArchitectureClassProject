@@ -2,6 +2,9 @@
 #define BUS_SNOOPER_H
 
 #include "flip_flop.h"
+#include "cache_block.h"
+
+struct busManager;
 
 // BusSnooper structure definition
 typedef struct {
@@ -13,6 +16,9 @@ typedef struct {
 
 // Function to create and initialize a BusSnooper on the heap
 BusSnooper bus_snooper_create(int id);
+
+// Function for the BusSnooper to snoop and react to bus commands
+void snoop(BusSnooper* snooper, Cache* cache, struct busManager* manager);
 
 #endif
 

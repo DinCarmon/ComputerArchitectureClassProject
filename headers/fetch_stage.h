@@ -11,7 +11,7 @@
  */
 typedef struct fetchStage
 {
-    StageData state;
+    struct stageData state;
 
     /**
      * @return Should stall?

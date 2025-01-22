@@ -1,4 +1,5 @@
 #include "decode_stage.h"
+#include "core.h"
 
 void updateRegisterValues_decode(DecodeStage* self)
 {
