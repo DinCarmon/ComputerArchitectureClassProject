@@ -15,8 +15,11 @@ bool do_fetch_operation(FetchStage* self)
     if (inst.opcode != Halt)
         self->state.myCore->pc_register.updated = self->state.myCore->pc_register.now + 1;
     else
+    {
         self->state.myCore->pc_register.updated = self->state.myCore->pc_register.now;
-    
+        self->state.myCore->num_of_instructions_executed += 1;
+    }
+        
     return false;
 }
 

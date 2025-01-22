@@ -38,15 +38,30 @@ typedef struct core {
     struct busManager* bus_manager;
 
     uint64_t* p_cycle;
-    uint64_t halt_cycle;                // The cycle in which a halt arrived to the writeback stage the operation of the core was finished.
+    uint64_t halt_cycle;                        // The cycle in which a halt arrived to the writeback stage the operation of the core was finished.
 
-    uint64_t num_of_instructions_executed;
+    uint64_t num_of_instructions_executed;      // Not including the halt final command.
+
+    uint64_t num_of_decode_stage_stalls;
+    uint64_t num_of_memory_stage_stalls;
+
+    uint64_t num_read_hits;
+    uint64_t num_write_hits;
+    uint64_t num_read_miss;
+    uint64_t num_write_miss;
 } Core;
 
 // Function to initialize a Core instance
 void configure_core(Core* core, int id, struct busManager* manager);
 
 // Function to advance the core to the next cycle
-void advance_core(Core* core, FlipFlop_bool stalling[NUM_OF_STAGES_PER_CORE - 1]);
+void advance_core(Core* core,
+                  uint64_t last_succesful_writeback_execution,
+                  uint64_t last_succesful_memory_execution,
+                  uint64_t last_succesful_execute_execution,
+                  uint64_t last_succesful_decode_execution,
+                  uint64_t last_succesful_fetch_execution,
+                  uint64_t last_insuccesful_memory_execution,
+                  uint64_t last_insuccesful_decode_execution);
 
 #endif

@@ -268,10 +268,13 @@ void writeRegisterFile(FILE* registerFile, FlipFlop_uint32_t* registerArr)
 
 void write_core_trace_line(FILE* coreTraceFile,
                            Core* core,
-                           bool decode_in_stall,
-                           bool memory_in_stall,
-                           int num_of_cycle_decode_in_stall,
-                           int num_of_cycle_memory_in_stall)
+                           uint64_t last_succesful_writeback_execution,
+                           uint64_t last_succesful_memory_execution,
+                           uint64_t last_succesful_execute_execution,
+                           uint64_t last_succesful_decode_execution,
+                           uint64_t last_succesful_fetch_execution,
+                           uint64_t last_insuccesful_memory_execution,
+                           uint64_t last_insuccesful_decode_execution)
 {
     // Write cycle
     char cycleStr[MAX_PATH_SIZE] = "";
@@ -279,50 +282,50 @@ void write_core_trace_line(FILE* coreTraceFile,
     fprintf(coreTraceFile, "%s", cycleStr);
     fprintf(coreTraceFile, " ");
 
-    if (decode_in_stall == true ||
-        memory_in_stall == true ||
-        *(core->p_cycle) < 1)
+    // If fetch was not executed in this cycle print ---
+    if (last_succesful_fetch_execution != *(core->p_cycle))
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
                                       core->fetch_stage.state.inputState.instructionAddress);
     fprintf(coreTraceFile, " ");
 
-    if (decode_in_stall == true ||
-        memory_in_stall == true ||
-        *(core->p_cycle) < 2)
+    // If decode was not executed in this cycle or
+    // (decode was executed in this cycle but fetch not -> i.e a stall)
+    // Then print a ---
+    if (((last_succesful_decode_execution != *(core->p_cycle)) &&
+         (last_insuccesful_decode_execution != *(core->p_cycle))) ||
+        last_succesful_fetch_execution != *(core->p_cycle) ||
+        *(core->p_cycle) <= 1)
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
                                       core->decode_stage.state.inputState.instructionAddress);
     fprintf(coreTraceFile, " ");
 
-    if (memory_in_stall == true ||
-        (memory_in_stall == false &&
-         decode_in_stall == true) ||
-        *(core->p_cycle) < 3)
+    if ((last_succesful_execute_execution != *(core->p_cycle)) ||
+        *(core->p_cycle) <= 2)
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
                                       core->execute_stage.state.inputState.instructionAddress);
     fprintf(coreTraceFile, " ");
 
-    if (memory_in_stall == true ||
-        (memory_in_stall == false &&
-         decode_in_stall == true &&
-         num_of_cycle_decode_in_stall < 2) ||
-        *(core->p_cycle) < 4)
+    // If memory was not executed in this cycle or
+    // (memory was executed in this cycle but execute not -> i.e a stall)
+    // Then print a ---
+    if (((last_succesful_memory_execution != *(core->p_cycle)) &&
+         (last_insuccesful_memory_execution != *(core->p_cycle))) ||
+        last_succesful_execute_execution != *(core->p_cycle) ||
+        *(core->p_cycle) <= 3)
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
                                       core->memory_stage.state.inputState.instructionAddress);
     fprintf(coreTraceFile, " ");
 
-    if (stalling[0].now == true ||
-        stalling[1].now == true ||
-        stalling[2].now == true ||
-        stalling[3].now == true ||
-        *(core->p_cycle) < 5)
+    if (last_succesful_writeback_execution != *(core->p_cycle) ||
+        *(core->p_cycle) <= 4)
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
@@ -393,11 +396,46 @@ void write_data_cache_file(FILE* cache_file,
 }
 
 void write_status_cache_file(FILE* cache_file,
-                      Cache* cache)
+                             Cache* cache)
 {
     for(int i = 0; i < DATA_CACHE_NUM_OF_BLOCKS_IN_CACHE; i++)
     {
         uint32_t word = (cache->tsram[i].state << TAG_FIELD_SIZE_IN_BITS) + cache->tsram[i].tag;
         writeNumberToFileInHex(cache_file, word);
     }
+}
+
+void write_stats_file(FILE* stats_file,
+                      Core* core)
+{
+    fprintf(stats_file, "%s", "cycles ");
+    fprintf(stats_file, "%d", (int)(core->halt_cycle));
+    fprintf(stats_file, "%s", "\n");
+
+    fprintf(stats_file, "%s", "instructions ");
+    fprintf(stats_file, "%d", (int)(core->num_of_instructions_executed));
+    fprintf(stats_file, "%s", "\n");
+
+    fprintf(stats_file, "%s", "read_hit ");
+    fprintf(stats_file, "%d", (int)(core->num_read_hits));
+    fprintf(stats_file, "%s", "\n");
+
+    fprintf(stats_file, "%s", "write_hit ");
+    fprintf(stats_file, "%d", (int)(core->num_write_hits));
+    fprintf(stats_file, "%s", "\n");
+
+    fprintf(stats_file, "%s", "read_miss ");
+    fprintf(stats_file, "%d", (int)(core->num_read_miss));
+    fprintf(stats_file, "%s", "\n");
+
+    fprintf(stats_file, "%s", "write_miss ");
+    fprintf(stats_file, "%d", (int)(core->num_write_miss));
+    fprintf(stats_file, "%s", "\n");
+
+    fprintf(stats_file, "%s", "decode_stall ");
+    fprintf(stats_file, "%d", (int)(core->num_of_decode_stage_stalls));
+    fprintf(stats_file, "%s", "\n");
+
+    fprintf(stats_file, "%s", "mem_stall ");
+    fprintf(stats_file, "%d", (int)(core->num_of_memory_stage_stalls));
 }

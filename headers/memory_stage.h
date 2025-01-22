@@ -13,6 +13,7 @@
 typedef struct memoryStage
 {
     struct stageData state;
+    uint64_t num_of_cycles_on_same_command; // How many stalls we already went through
 } MemoryStage;
 
 void configure_memory_stage(MemoryStage* stage, struct core* myCore);

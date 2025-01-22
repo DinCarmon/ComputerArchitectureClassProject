@@ -46,8 +46,9 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
                       Core cores[NUM_OF_CORES],
                       BusManager* bus_manager)
 {
-    uint64_t cycle = 0;
+    uint64_t cycle = 1;
 
+    uint64_t last_succesful_writeback_execution[NUM_OF_CORES];
     uint64_t last_succesful_memory_execution[NUM_OF_CORES];
     uint64_t last_succesful_execute_execution[NUM_OF_CORES];
     uint64_t last_succesful_decode_execution[NUM_OF_CORES];
@@ -60,6 +61,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
     for(int i = 0; i < NUM_OF_CORES; i++)
     {
         cores[i].p_cycle = &cycle;
+        last_succesful_writeback_execution[i] = 0;
         last_succesful_memory_execution[i] = 0;
         last_succesful_execute_execution[i] = 0;
         last_succesful_decode_execution[i] = 0;
@@ -70,21 +72,6 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
 
     while(true)
     {
-        // 0. Log everthing
-        if (cycle != 0) // Log only from cycle 1. In cycle 0 we only fetch first instruction, and now values are not initialized yet
-        {
-            for (int i = 0; i < NUM_OF_CORES; i++)
-            {
-                write_core_trace_line(core_trace_files[i],
-                                      &(cores[i]),
-                                      decode_in_stall[i],
-                                      memory_in_stall[i],
-                                      num_of_cycle_decode_in_same_status[i],
-                                      num_of_cycles_memory_in_same_status[i]);
-            }
-            write_bus_trace_line(bus_trace_file, bus_manager);
-        }
-
         // 1. Check ending condition for simulation
         bool end_simulation = true;
         for (int i = 0; i < NUM_OF_CORES; i++)
@@ -102,13 +89,18 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
         // 2. Do operations of each core
         for(int i = 0; i < NUM_OF_CORES; i++)
         {
+            // Ensure every stage happends when not stalled, and has some input.
+            // This is crucial for correct statistics on core.
+
             if (cycle >= 5 &&
-                last_succesful_memory_execution[i] == cycle - 1)
+                last_succesful_memory_execution[i] >= last_succesful_writeback_execution[i])
+            {
                 do_write_back_operation(&(cores[i].writeback_stage));
+                last_succesful_writeback_execution[i] = cycle;
+            }
 
             if (cycle >= 4 &&
-                ((last_succesful_execute_execution[i] == cycle - 1) ||
-                 (last_insuccesful_memory_execution[i] == cycle - 1)))
+                last_succesful_execute_execution[i] >= last_succesful_memory_execution[i])
             {
                 bool memory_should_stall = do_memory_operation(&(cores[i].memory_stage));
                 if (memory_should_stall)
@@ -116,17 +108,18 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
                 else
                     last_insuccesful_memory_execution[i] = cycle;
             }
-                
+
             if (cycle >= 3 &&
-                ((last_succesful_decode_execution[i] == cycle - 1)))
+                last_insuccesful_memory_execution[i] != cycle - 1 &&
+                last_succesful_decode_execution[i] >= last_succesful_execute_execution[i])
             {
                 do_execute_operation(&(cores[i].execute_stage));
                 last_succesful_execute_execution[i] = cycle;
             }
 
             if (cycle >= 2 &&
-                ((last_succesful_fetch_execution[i] == cycle - 1) ||
-                 (last_insuccesful_decode_execution[i] == cycle - 1)))
+                last_insuccesful_memory_execution[i] != cycle - 1 &&
+                last_succesful_fetch_execution[i] >= last_succesful_decode_execution[i])
             {
                 bool decode_should_stall = do_decode_operation(&(cores[i].decode_stage));
                 if (decode_should_stall)
@@ -135,7 +128,9 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
                     last_insuccesful_decode_execution[i] = cycle;   
             }
             
-            if (cycle >= 1)
+            if (cycle >= 1 &&
+                last_insuccesful_memory_execution[i] != cycle - 1 &&
+                last_insuccesful_decode_execution[i] != cycle -1)
             {
                 do_fetch_operation(&(cores[i].fetch_stage));
                 last_succesful_fetch_execution[i] = cycle;
@@ -151,15 +146,33 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
 
         write_next_cycle_of_bus(bus_manager);
         
-        // 3. Advance all flip flops, and cycle
+        // 3. Log everthing
+        for (int i = 0; i < NUM_OF_CORES; i++)
+        {
+            if (cores[i].writeback_stage.state.inputState.instruction.opcode != Halt)
+                write_core_trace_line(core_trace_files[i],
+                                        &(cores[i]),
+                                        last_succesful_writeback_execution[i],
+                                        last_succesful_memory_execution[i],
+                                        last_succesful_execute_execution[i],
+                                        last_succesful_decode_execution[i],
+                                        last_succesful_fetch_execution[i],
+                                        last_insuccesful_memory_execution[i],
+                                        last_insuccesful_decode_execution[i]);
+        }
+        write_bus_trace_line(bus_trace_file, bus_manager);
+
+        // 4. Advance all flip flops, and cycle
         cycle++;
         for(int i = 0; i < NUM_OF_CORES; i++)
         {
-            advance_core(&(cores[i]), stalling[i]);
-            for (int j = 0; j < NUM_OF_STAGES_PER_CORE - 1; j++)
-            {
-                UPDATE_FLIP_FLOP(stalling[i][j], false);
-            }
+            advance_core(&(cores[i]), last_succesful_writeback_execution[i],
+                                      last_succesful_memory_execution[i],
+                                      last_succesful_execute_execution[i],
+                                      last_succesful_decode_execution[i],
+                                      last_succesful_fetch_execution[i],
+                                      last_insuccesful_memory_execution[i],
+                                      last_insuccesful_decode_execution[i]);
         }
         advance_bus_to_next_cycle(bus_manager);
     }
@@ -186,6 +199,8 @@ void write_simulator_summary_files(FILE* register_files[NUM_OF_CORES],
 
         write_status_cache_file(status_cache_files[i],
                                  &(cores[i].cache_now));
+
+        write_stats_file(stats_files[i], &(cores[i]));
     }
 }
 
