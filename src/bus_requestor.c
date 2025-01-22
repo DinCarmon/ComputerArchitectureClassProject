@@ -2,23 +2,19 @@
 
 
 // Function to create and initialize a BusRequestor on the heap
-BusRequestor* bus_requestor_create(int id) {
-    BusRequestor* requestor = (BusRequestor*)malloc(sizeof(BusRequestor));
-    if (!requestor) {
-        fprintf(stderr, "Failed to allocate memory for BusRequestor.\n");
-        exit(EXIT_FAILURE);
-    }
+BusRequestor bus_requestor_create(int id) {
+    BusRequestor requestor;
 
     // Initialize BusRequestor fields
-    requestor->operation = 0;  // Default operation
-    requestor->address = 0;    // Default address
-    requestor->start_cycle = 0; // Default start cycle
-    requestor->IsRequestOnBus.now = false;
-    requestor->IsRequestOnBus.updated = false;
-    requestor->LastCycle.now = false;
-    requestor->LastCycle.updated = false;
-    requestor->priority = -1; // Default priority
-    requestor->id = id; // Set the provided ID
+    requestor.operation = 0;  // Default operation
+    requestor.address = 0;    // Default address
+    requestor.start_cycle = 0; // Default start cycle
+    requestor.IsRequestOnBus.now = false;
+    requestor.IsRequestOnBus.updated = false;
+    requestor.LastCycle.now = false;
+    requestor.LastCycle.updated = false;
+    requestor.priority = -1; // Default priority
+    requestor.id = id; // Set the provided ID
 
     return requestor;
 }
@@ -28,7 +24,7 @@ bool BusRequestorAlreadyOccupied(const BusRequestor* requestor) {
     return requestor->IsRequestOnBus.now;
 }
 
-// Function to check if the request is over, if it is resest the requestor
+// Function to check if the request is over, if it is reset the requestor
 bool BusRequestOver(BusRequestor* requestor) {
     if (requestor->LastCycle.now) {
         bus_requestor_reset(requestor);
@@ -53,33 +49,3 @@ void bus_requestor_reset(BusRequestor* requestor) {
     requestor->LastCycle.updated = false;
     //requestor->priority = 0;       // Reset priority
 }
-
-
-// Function to destroy a BusRequestor
-void bus_requestor_destroy(BusRequestor* requestor) {
-    if (requestor) {
-        free(requestor);
-    }
-}
-
-// Function to perform the bus operation if granted
-//void DoOperation(BusRequestor* requestor, BusManager* manager, int cycle) {
-//    // Check if the requestor is occupied (if not, return)
-//    if (!requestor->busRequestorOccupied_now) {
-//        return;
-//    }
-//
-//    // Check if the requestor is not currently in transaction and if the bus manager grants the request
-//    if (!requestor->busRequestInTransaction_now && manager->RequestForBusGrantedRightNow()) {
-//        // Set the requestor's transaction as in progress
-//        requestor->busRequestInTransaction_now = true;
-//
-//        // Set the start cycle of the request
-//        requestor->start_cycle = cycle;
-//
-//        // Set the manager's bus details based on the requestor's request
-//        manager->bus_origid = requestor->id;
-//        manager->bus_cmd = requestor->operation;
-//        manager->bus_addr = requestor->address;
-//    }
-//}

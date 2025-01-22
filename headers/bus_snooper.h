@@ -1,5 +1,6 @@
-#pragma once
-#include "defines.h" 
+#ifndef BUS_SNOOPER_H
+#define BUS_SNOOPER_H
+
 #include "flip_flop.h"
 
 // BusSnooper structure definition
@@ -11,9 +12,7 @@ typedef struct {
 } BusSnooper;
 
 // Function to create and initialize a BusSnooper on the heap
-BusSnooper* bus_snooper_create(int id);
+BusSnooper bus_snooper_create(int id);
 
-// Function to destroy a BusSnooper and free its memory
-void bus_snooper_destroy(BusSnooper* snooper);
-
+#endif
 

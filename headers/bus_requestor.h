@@ -1,7 +1,8 @@
-#pragma once
+#ifndef BUS_REQUESTOR_H
+#define BUS_REQUESTOR_H
+
 #include <stdio.h>
 #include <stdlib.h>
-#include "defines.h"
 #include "flip_flop.h"
 
 
@@ -17,13 +18,10 @@ typedef struct {
     int id;                           // Identifier for the BusRequestor
 } BusRequestor;
 // Function to create and initialize a BusRequestor
-BusRequestor* bus_requestor_create(int id);
+BusRequestor bus_requestor_create(int id);
 
 // Function to check if the request is over, if it is resest the requestor
 bool BusRequestOver(BusRequestor* requestor);
-
-// Funcion to destroy requestor memoey allck
-void bus_requestor_destroy(BusRequestor* requestor);
 
 // Function to check if the BusRequestor is already occupied
 bool BusRequestorAlreadyOccupied(const BusRequestor* requestor);
@@ -31,6 +29,4 @@ bool BusRequestorAlreadyOccupied(const BusRequestor* requestor);
 // Function to reset the BusRequestor to its initial state
 void bus_requestor_reset(BusRequestor* requestor);
 
-// Function to perform the bus operation if granted
-//void DoOperation(BusRequestor* requestor, BusManager* manager, int cycle);
-
+#endif

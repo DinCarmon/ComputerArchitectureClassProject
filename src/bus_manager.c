@@ -1,49 +1,46 @@
+#include "limits.h"
 #include "bus_manager.h"
 
 
-BusManager* bus_manager_create(BusRequestor** requestors, Core** cores, MainMemory* main_memory) {
-    BusManager* manager = (BusManager*)malloc(sizeof(BusManager));
-    if (!manager) {
-        fprintf(stderr, "Failed to allocate memory for BusManager.\n");
-        exit(EXIT_FAILURE);
-    }
+BusManager bus_manager_create(BusRequestor** requestors, Core (*cores)[NUM_OF_CORES], MainMemory* main_memory) {
+    BusManager manager;
 
     // Initialize bus attributes
-    manager->LastTransactionCycle = 0;
-    manager->BusStatus.now = BUS_FREE;
-    manager->BusStatus.updated = BUS_FREE;
-    manager->Interupted.now = false;
-    manager->Interupted.updated = false;
-    manager->bus_shared.now = false;
-    manager->bus_shared.updated = false;
-    manager->bus_origid.now = -1;
-    manager->bus_origid.updated = -1;
-    manager->bus_cmd.now = 0;
-    manager->bus_cmd.updated = 0;
-    manager->bus_addr.now = 0;
-    manager->bus_addr.updated = 0;
-    manager->bus_line_addr.now = 0;
-    manager->bus_line_addr.updated = 0;
-    manager->bus_data.now = 0;
-    manager->bus_data.updated = 0;
-    manager->core_turn = -1;
-    manager->interuptor_id = -1;
-    manager->numOfCyclesInSameStatus = 0;
-    manager->main_memory = main_memory;
+    manager.LastTransactionCycle = 0;
+    manager.BusStatus.now = BUS_FREE;
+    manager.BusStatus.updated = BUS_FREE;
+    manager.Interupted.now = false;
+    manager.Interupted.updated = false;
+    manager.bus_shared.now = false;
+    manager.bus_shared.updated = false;
+    manager.bus_origid.now = -1;
+    manager.bus_origid.updated = -1;
+    manager.bus_cmd.now = 0;
+    manager.bus_cmd.updated = 0;
+    manager.bus_addr.now = 0;
+    manager.bus_addr.updated = 0;
+    manager.bus_line_addr.now = 0;
+    manager.bus_line_addr.updated = 0;
+    manager.bus_data.now = 0;
+    manager.bus_data.updated = 0;
+    manager.core_turn = -1;
+    manager.interuptor_id = -1;
+    manager.numOfCyclesInSameStatus = 0;
+    manager.main_memory = main_memory;
 
     // Initialize enlisted_requestors list as empty
-    for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        manager->enlisted_requestors[i] = NULL;
+    for (int i = 0; i < NUM_OF_CORES; ++i) {
+        manager.enlisted_requestors[i] = NULL;
     }
 
     // Assign the provided requestors
-    for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        manager->requestors[i] = requestors[i];
+    for (int i = 0; i < NUM_OF_CORES; ++i) {
+        manager.requestors[i] = requestors[i];
     }
 
     // Assign the provided cores
-    for (int i = 0; i < NUM_REQUESTORS; ++i) {
-        manager->cores[i] = cores[i];
+    for (int i = 0; i < NUM_OF_CORES; ++i) {
+        manager.cores[i] = cores[i];
     }
 
     return manager;
@@ -57,7 +54,7 @@ void resetEnlistedRequestors(BusManager* manager) {
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0; i < NUM_REQUESTORS; ++i) {
+    for (int i = 0; i < NUM_OF_CORES; ++i) {
         manager->enlisted_requestors[i] = NULL;
     }
 
@@ -90,20 +87,13 @@ void bus_manager_reset(BusManager* manager) {
     manager->interuptor_id = -1;
 
     // Reset each BusRequestor
-    for (int i = 0; i < NUM_REQUESTORS; ++i) {
+    for (int i = 0; i < NUM_OF_CORES; ++i) {
         if (manager->requestors[i]) { // Ensure pointer is valid before resetting
             bus_requestor_reset(manager->requestors[i]);
         }
     }
 
     resetEnlistedRequestors(manager);
-}
-
-// Function to destroy a BusManager
-void bus_manager_destroy(BusManager* manager) {
-    if (manager) {
-        free(manager);
-    }
 }
 
 // Function to check if the bus is free
@@ -114,7 +104,7 @@ bool IsBusFree(const BusManager* manager) {
 
 // Function to arrange the priorities of the requestors based on the bus_origid
 void arrangePriorities(BusManager* manager) {
-    if (!manager || manager->bus_origid.updated < 0 || manager->bus_origid.updated >= NUM_REQUESTORS) {
+    if (!manager || manager->bus_origid.updated < 0 || manager->bus_origid.updated >= NUM_OF_CORES) {
         printf("error in artangepriorities inputs");
         exit(EXIT_FAILURE);
     }
@@ -122,12 +112,12 @@ void arrangePriorities(BusManager* manager) {
     int originIndex = manager->bus_origid.updated;
     int originPriority = manager->requestors[originIndex]->priority;
 
-    for (int i = 0; i < NUM_REQUESTORS; ++i) {
+    for (int i = 0; i < NUM_OF_CORES; ++i) {
         if (i != originIndex && manager->requestors[i]->priority > originPriority) {
             manager->requestors[i]->priority -= 1;
         }
     }
-    manager->requestors[originIndex]->priority = NUM_REQUESTORS;
+    manager->requestors[originIndex]->priority = NUM_OF_CORES;
 }
 
 // Function to assign the core with the lowest priority to core_turn
@@ -139,7 +129,7 @@ void FinishBusEnlisting(BusManager* manager) {
     int minPriority = INT_MAX;
     int coreWithMinPriority = -1;
 
-    for (int i = 0; i < NUM_REQUESTORS; ++i) {
+    for (int i = 0; i < NUM_OF_CORES; ++i) {
         if (manager->enlisted_requestors[i] != NULL) {
             if (manager->enlisted_requestors[i]->id != 0) {
                 int currentPriority = manager->enlisted_requestors[i]->priority;
@@ -171,7 +161,7 @@ void Enlist(BusRequestor* requestor, int addr, int BusActionType, BusManager* ma
     manager->enlisted_requestors[requestor->id] = requestor;
 }
 
-void writeBusData(BusManager* manager, int32_t diff, bool read, Cache* cache) {
+void writeBusData(BusManager* manager, bool read, Cache* cache) {
     uint32_t read_address;
     if (manager->bus_line_addr.now == 0) {
         read_address = manager->bus_addr.now - get_block_offset(manager->bus_addr.now);
@@ -222,7 +212,6 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
 
     // Reset the enlisted requestors array
     resetEnlistedRequestors(manager);
-    int32_t diff = currentCycle - manager->LastTransactionCycle;
 
     switch (manager->BusStatus.now) {
     case BUS_FREE:
@@ -239,7 +228,9 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
         manager->BusStatus.updated = BUS_BEFORE_FLUSH;
         manager->LastTransactionCycle = currentCycle;
         // If memory stage only asked for busrdx without response update last cycle.
-        if (get_state(manager->bus_addr.now, manager->cores[manager->bus_origid.now]->cache_now) == SHARED && manager->bus_cmd.now == BUS_RDX) {
+        if (get_state(manager->bus_addr.now,
+                      &(manager->cores[manager->bus_origid.now]->cache_now)) == SHARED &&
+            manager->bus_cmd.now == BUS_RDX) {
             manager->requestors[manager->bus_origid.now]->LastCycle.updated = true;
             bus_manager_reset(manager);
             
@@ -261,12 +252,16 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
 
     case BUS_FLUSH: 
         
-        writeBusData(manager, diff, true, manager->cores[manager->bus_origid.now]->cache_updated);
+        writeBusData(manager,
+                     true,
+                     &(manager->cores[manager->bus_origid.now]->cache_updated));
         // Increment the number of cycles in the same status
         manager->numOfCyclesInSameStatus++;
         // Transition to BUS_FREE if the block size limit is reached
         if (manager->numOfCyclesInSameStatus == BLOCK_SIZE) {
-            main_memory_read(manager->main_memory, manager->cores[manager->bus_origid.now]->cache_updated, manager->bus_addr.now, StateToUpdate(manager)) ;
+            main_memory_read(manager->main_memory,
+                             &(manager->cores[manager->bus_origid.now]->cache_updated),
+                             manager->bus_addr.now, StateToUpdate(manager)) ;
             manager->requestors[manager->bus_origid.now]->LastCycle.updated = true;
             bus_manager_reset(manager);
         }
@@ -274,36 +269,23 @@ void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue
 
     case BUS_CACHE_INTERRUPTED:
         if(manager->requestors[manager->bus_origid.now]->operation == BUS_RD) {
-            writeBusData(manager, diff, false, manager->cores[manager->bus_origid.now]->cache_now);
+            writeBusData(manager,
+                         false,
+                         &(manager->cores[manager->bus_origid.now]->cache_now));
             // Increment the number of cycles in the same status
             manager->numOfCyclesInSameStatus++;
             if (manager->numOfCyclesInSameStatus == BLOCK_SIZE) {
-                main_memory_write(manager->main_memory, manager->cores[manager->interuptor_id]->cache_now, manager->bus_addr.now);
-                main_memory_read(manager->main_memory, manager->cores[manager->bus_origid.now]->cache_updated, manager->bus_addr.now, StateToUpdate(manager));
+                main_memory_write(manager->main_memory,
+                                  &(manager->cores[manager->interuptor_id]->cache_now),
+                                  manager->bus_addr.now);
+                main_memory_read(manager->main_memory, 
+                                 &(manager->cores[manager->bus_origid.now]->cache_updated),
+                                 manager->bus_addr.now, StateToUpdate(manager));
                 manager->requestors[manager->bus_origid.now]->LastCycle.updated = true;
                 bus_manager_reset(manager);
             }
-            break;
         }
-        //  this is unnecessery becasue the behiviour is the same i think for rd and rdx
-        //else {          // cmd is bus_rdx , this is un
-            //// XXX: Do a validate for the bus rdx
-            //writeBusData(manager, diff, false, manager->caches[manager->bus_origid.now]);    // Write the cache response to main memory
-            //writeBusData(manager, diff, true, manager->caches[manager->bus_origid.now]);    // Write cache response to the cache requestor
-            //// XXX: Update numbers. and insert first if logic to thired if.
-            //// XXX: total update here. need rerwriting.
-            //if (currentCycle - manager->LastTransactionCycle == 39) {
-            //    manager->requestors[manager->bus_origid.now]->LastCycle.updated = true;
-            //}
-            //if ((currentCycle - manager->LastTransactionCycle == 20)) {
-            //    main_memory_write(manager->main_memory, manager->caches[manager->interuptor_id], manager->bus_addr.now);
-            //}
-            //if (currentCycle - manager->LastTransactionCycle == 40) {
-            //    main_memory_read(manager->main_memory, manager->caches[manager->bus_origid.now], manager->bus_addrnow, StateToUpdate(manager, manager->caches[manager->bus_origid.now]));
-            //    bus_manager_reset(manager);
-            //}
-            //break;
-        //}
+        break;
 
     default:
         break;
@@ -336,7 +318,7 @@ void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager) {
             if (state == MODIFIED && manager->bus_cmd.now == BUS_RD) {
                 manager->interuptor_id = snooper->id;
                 manager->Interupted.updated = true;
-                update_state(address, cache, Shared);
+                update_state(address, cache, SHARED);
                 return;
             }
 
@@ -361,21 +343,4 @@ void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager) {
         }
 
     }
-}
-
-// Function to do the bus requestor operation, the function assumes that there is a need to call the bus
-// the function will return true if the operation is over and false if a stall is needed 
-// XXX: Delete it. obsolete.
-bool RequestorDoOperation(BusRequestor* requestor, BusManager* manager, uint32_t address, uint32_t cmd, int cycle) {
-    bool BusFree = IsBusFree(manager);
-    if (!requestor->IsRequestOnBus.now && BusFree) {
-        manager->enlisted_requestors[requestor->id] = requestor;
-        return false;
-    }
-    
-    if (requestor->LastCycle.now) {
-        return true;
-    }
-    return false;
-
 }

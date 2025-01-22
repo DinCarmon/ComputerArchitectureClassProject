@@ -59,72 +59,11 @@
 // Default stat paths
 #define DEFAULT_STATS_FILE_PATH_PREFIX                 "stats"
 
-#define MAX_ERROR_MESSAGE_SIZE 1000 //XXX gave me error taht it must be a constant value
-#define MAX_PATH_SIZE 1000 //XXX gave me error taht it mu
-
-//#define  LOG2                                 (log(2))
-//#define NUM_OF_CORES 4          // Num of cores in the architecture  //XXX i had errors when it was a const becuase its not a compile time constant
-//const int32_t BYTE_SIZE_IN_BITS                 = 8;
-//
-//// Registers constants
-//const int32_t NUM_REGISTERS_PER_CORE            = 16;           // Total number of registers
-//const int32_t REGISTER_SIZE_IN_BITS             = 32;           // Size of each register in bits
-//const int32_t IMMEDIATE_REGISTER_INDEX          = 1;            // Special register for immediate values
-//const int32_t ZERO_REGISTER_INDEX               = 0;            // Register that always contains zero
-//const int32_t INSTRUCTION_MEMORY_DEPTH          = 1024;         // Each core has its own instruction memory
-//const int32_t PC_REGISTER_SIZE_IN_BITS          = 10;           // (log(INSTRUCTION_MEMORY_DEPTH) / LOG2)
-//
-//// Cmd constants
-//const int32_t CMD_SIZE_IN_BITS                  = 32;
-//const int32_t IMMEDIATE_FIELD_SIZE_IN_BITS      = 12;
-//const int32_t REGISTER_INDEX_FIELD_SIZE_IN_BITS = 4;            // (log(NUM_REGISTERS_PER_CORE) / LOG2)
-//const int32_t OPCODE_FIELD_SIZE_IN_BITS         = 8;
-//
-//
-//
-//// Main memory constants
-//const int32_t WORD_SIZE_IN_BITS                 = 32;
-//const int32_t MEMORY_DEPTH                      = 1048576;      // (pow(2, 20))
-//
-//// Bus constants
-//const int32_t BUS_ORIGIN_ID_LINE_SIZE_IN_BITS   = 3;
-//const int32_t BUS_CMD_LINE_SIZE_IN_BITS         = 2;
-//const int32_t BUS_ADDRESS_LINE_SIZE_IN_BITS     = 20;           // (log(MEMORY_DEPTH) / LOG2)
-//const int32_t BUS_DATA_LINE_SIZE_IN_BITS        = 32;
-//const int32_t BUS_SHARED_LINE_SIZE_IN_BITS      = 1;
-//
-//
-//// Block constants
-//const int32_t DATA_CACHE_WORD_DEPTH             = 256;          // How many words in each data cache.
-//const int32_t DATA_CACHE_BLOCK_DEPTH            = 4;            // How many words in each block.
-//const int32_t OFFSET_BIT_LENGTH                 = 2;            // ((log(DATA_CACHE_BLOCK_DEPTH) / LOG2))
-//const int32_t DATA_CACHE_NUM_OF_BLOCKS_IN_CACHE = 64;           // Number of cache lines in TSRAM (64 rows)
-//const int32_t INDEX_BIT_LENGTH                  = 6;            // ((log(DATA_CACHE_NUM_OF_BLOCKS_IN_CACHE) / LOG2))
-//const int32_t TAG_FIELD_SIZE_IN_BITS            = 12;           // ((log(MEMORY_DEPTH) / LOG2) - (log(DATA_CACHE_DEPTH) / LOG2))
-//const int32_t STATUS_BITS_SIZE_FOR_BLOCK        = 2;
-//
-//// Default instruction memory file prefix
-//const char DEFAULT_INSTRUCTION_MEMORY_FILE_PATH_PREFIX[]    = "imem";
-//// Default main memory file path
-//const char DEFAULT_MAIN_MEMORY_FILE_INPUT_PATH[]            = "memin.txt";
-//const char DEFAULT_MAIN_MEMORY_FILE_OUTPUT_PATH[]           = "memout.txt";
-//// Default register file prefix
-//const char DEFAULT_REGISTER_FILE_PATH_PREFIX[]              = "regout";
-//// Default trace paths
-//const char DEFAULT_CORE_TRACE_FILE_PATH_PREFIX[]            = "core";
-//const char DEFAULT_CORE_TRACE_FILE_PATH_SUFFIX[]            = "trace.txt";
-//const char DEFAULT_BUS_TRACE_PATH[]                         = "bustrace.txt";
-//// Default caches paths
-//const char DEFAULT_DSRAM_CACHE_FILE_PATH_PREFIX[]           = "dsram";
-//const char DEFAULT_TSRAM_CACHE_FILE_PATH_PREFIX[]           = "tsram";
-//// Default stat paths
-//const char DEFAULT_STATS_FILE_PATH_PREFIX[]                 = "stats";
-//
-//#define MAX_ERROR_MESSAGE_SIZE 1000 //XXX gave me error taht it must be a constant value
-//#define MAX_PATH_SIZE 1000 //XXX gave me error taht it must be a constant value
+#define MAX_ERROR_MESSAGE_SIZE                         1000
+#define MAX_PATH_SIZE                                  1000
 
 // Define the CacheLine structure for DSRAM (1 word per line)
-typedef uint32_t CacheLine;  // Each cache line contains a 32-bit word (int)
+typedef uint32_t CacheLine;  // Each cache line contains a 32-bit word (uint32_t)
 
 /**
  * OpcodeType - Enum representing all possible CPU instructions.
@@ -157,18 +96,11 @@ typedef enum opcodeType {
  * The enum value represents its value as stated in a line in the TSRAM memory
  */
 typedef enum cacheLineStatus {
-    Invalid         = 0,    // Cache block is invalid
-    Shared          = 1,     // Cache block is shared
-    Exclusive       = 2,  // Cache block is exclusive
-    Modified        = 3    // Cache block is modified
+    INVALID         = 0,    // Cache block is invalid
+    SHARED          = 1,     // Cache block is shared
+    EXCLUSIVE       = 2,  // Cache block is exclusive
+    MODIFIED        = 3    // Cache block is modified
 } CacheLineStatus;
-
-//// Define the TSRAM memory - The data structure holding metadata on block in cache
-//// structure: tag and state
-//typedef struct tagState {
-//    uint32_t            tag;       // Tag bits (12 bits)
-//    CacheLineStatus     state;   // State bits (2 bits)
-//} TagState;
 
 /**
  * BusOriginId - Identifies different originator of transaction on the bus
@@ -201,5 +133,26 @@ typedef enum busBlockSharingStatus {
     BlockIsNotShared    = 0,    // Default value for the bus_shared line
     BlockIsShared       = 1
 } BusBlockSharingStatus;
+
+// Define bus status constants in uppercase
+#define BUS_FREE   1    // The bus is free and available for use
+#define BUS_RD     2    // The bus is performing a read operation
+#define BUS_RDX    3    // The bus is performing a read-exclusive operation
+#define BUS_INVALID 4   // The bus is in an invalid state (e.g., error state or not in use)
+#define BUS_FLUSH 5		// the bus is performing flush
+#define BUS_BEFORE_FLUSH 6 // the bus is goint to flush
+#define BUS_CACHE_INTERRUPTED 7 // The state when a cache in mode m interupted and sent data
+#define BUS_WRITE 8             // the bus is writing data
+
+
+// Constants for cache configuration
+#define DSRAM_SIZE         256  // Number of cache lines in DSRAM (256 rows)
+#define TSRAM_SIZE         64   // Number of cache lines in TSRAM (64 rows)
+#define WORD_SIZE          4    // Size of a word in bytes (1 word = 4 bytes)
+#define TAG_SIZE           12   // Tag size in bits
+#define INDEX_SIZE         6    // Index size in bits (64 rows in TSRAM)
+#define BLOCK_OFFSET_SIZE  2    // Block offset size in bits (4 bytes per word)
+#define STATE_SIZE         2    // State size in bits (Modified, Exclusive, Shared, Invalid)
+#define BLOCK_SIZE		   4	// size of memory block
 
 #endif

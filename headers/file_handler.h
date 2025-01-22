@@ -5,11 +5,10 @@
 #include <stdbool.h>  // for bool
 #include <stdint.h>   // for uint32_t
 
-// If these headers declare NUM_OF_CORES, MAX_ERROR_MESSAGE_SIZE, 
-// MAX_PATH_SIZE, MainMemory, Core, etc., you need them here:
 #include "constants.h"
 #include "core.h"
 #include "main_memory.h"
+#include "core_pipeline.h"
 
 /**
  * Opens a file with the given path and mode.
@@ -104,7 +103,7 @@ void getAllFileDescritpors(int argc,
  * @param instructionMemoryFile   File containing the instructions (in hex).
  * @param instructionMemory       Pointer to an integer array to store the instructions.
  */
-void loadInstructionMemory(FILE* instructionMemoryFile, int** instructionMemory);
+void loadInstructionMemory(FILE* instructionMemoryFile, uint32_t* instructionMemory);
 
 /**
  * Loads data from a file into the main memory structure.
@@ -137,9 +136,9 @@ void writeRegisterFile(FILE* registerFile, uint32_t* registerArr);
  * @param core            Pointer to the Core whose state is being traced.
  * @param cycle           The current cycle number (for logging).
  */
-void writeCoreTrace(FILE* coreTraceFile, Core* core, uint32_t cycle);
+void writeCoreTrace(FILE* coreTraceFile, Core* core, CorePipeLine* pipeline, uint32_t cycle);
 
 // load instructionmemory for all cores
-void loadCoresImemory(Core** cores, FILE* instructionMemoryFiles[NUM_OF_CORES]);
+void loadCoresImemory(Core (*cores)[NUM_OF_CORES], FILE* instructionMemoryFiles[NUM_OF_CORES]);
 
 #endif /* FILE_HANDLER_H */

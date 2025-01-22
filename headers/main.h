@@ -1,14 +1,14 @@
-#pragma once
-// Include all the necessary headers
+#ifndef MAIN_H
+#define MAIN_H
+
+#include <stdio.h>
+
 #include "main_memory.h"
 #include "bus_manager.h"
 #include "bus_snooper.h"
 #include "bus_requestor.h"
-//#include "bus_request.h"
-#include "cache.h"
+#include "cache_block.h"
 #include "core.h"
-#include "defines.h"
-#include <stdio.h>
 #include "constants.h"
 #include "decode_stage.h"
 #include "fetch_stage.h"
@@ -20,3 +20,5 @@
 
 // the simulator start point and logic
 int main(int argc, char* argv[]);
+
+#endif

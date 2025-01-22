@@ -1,19 +1,17 @@
-#pragma once
-#include "defines.h"
+#ifndef CACHE_BLOCK_H
+#define CACHE_BLOCK_H
 
+#include "constants.h"
 
-
-// Define the CacheLine structure for DSRAM (1 word per line)
-typedef uint32_t CacheLine;  // Each cache line contains a 32-bit word (uint32_t)
-
-// Define the TSRAM structure for tag and state
-typedef struct {
+// Define the TSRAM memory - The data structure holding metadata on block in cache
+// structure: tag and state
+typedef struct tagState {
     uint32_t tag : TAG_SIZE;    // Tag bits (12 bits)
     uint32_t state : STATE_SIZE; // State bits (2 bits)
 } TagState;
 
 // Define the Cache structure
-typedef struct {
+typedef struct cache {
     CacheLine dsram[DSRAM_SIZE];  // Data SRAM (256 rows of 1 word per row)
     TagState tsram[TSRAM_SIZE];   // Tag SRAM (64 rows, each 14 bits: 12 for tag + 2 for state)
 } Cache;
@@ -45,3 +43,7 @@ int get_state(uint32_t address, Cache* cache);
 
 // Function to update state in cache
 void update_state(uint32_t address, Cache* cache, uint32_t state);
+
+int get_first_address_in_block(Cache* cache, int index);
+
+#endif

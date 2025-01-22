@@ -1,6 +1,7 @@
-#include "stdio.h"
-#include "stdlib.h"
-#include "stdbool.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
 #include "constants.h"
 #include "core.h"
@@ -10,13 +11,14 @@
 
 FILE* openFile(char* filePath, char mode)
 {
-    FILE *file = fopen(filePath, mode);
+    FILE *file = fopen(filePath, &mode);
     if (file == NULL)
     {
         char errorMessage[MAX_ERROR_MESSAGE_SIZE] = "Error opening file: ";
-        strcat_s(errorMessage, sizeof(errorMessage), filePath);
-        strcat_s(errorMessage, sizeof(errorMessage), " in mode: ");
-        strcat_s(errorMessage, sizeof(errorMessage),mode);
+        strncat(errorMessage, filePath, sizeof(errorMessage) - 1);
+        strncat(errorMessage, " in mode: ", sizeof(errorMessage) - 1);
+        strncat(errorMessage, &mode, 1);
+        strncat(errorMessage, "", 1);
         perror(errorMessage);
     }
 
@@ -72,7 +74,7 @@ bool readNumFromFileInHex(FILE* file, uint32_t* num)
     if (!isHexString(line))
     {
         char errorMessage[MAX_ERROR_MESSAGE_SIZE] = "Not a hex string: ";
-        strcat_s(errorMessage, sizeof(errorMessage), line);
+        strncat(errorMessage, line, sizeof(errorMessage) - 1);
         perror(errorMessage);
     }
 
@@ -103,7 +105,7 @@ void writeNumberToFileInHex(FILE* file, uint32_t num)
 
     numberToHexString(num, line, 8);
 
-    fprintf(file, line);
+    fprintf(file, "%s", line);
 }
 
 void writeInstructionAddressToFile(FILE* file, uint32_t instructionAddress)
@@ -111,9 +113,9 @@ void writeInstructionAddressToFile(FILE* file, uint32_t instructionAddress)
     char addressInHex[4];
     addressInHex[3] = '\0';
     
-    numberToHexString(addressInHex, instructionAddress, 3);
+    numberToHexString(instructionAddress, addressInHex, 3);
 
-    fprintf(file, addressInHex);
+    fprintf(file, "%s", addressInHex);
 }
 
 void getAllFileDescritpors(int argc,
@@ -130,64 +132,67 @@ void getAllFileDescritpors(int argc,
 {
     if (argc == 2)
     {
-        *mainMemoryInputFile = openFile(DEFAULT_MAIN_MEMORY_FILE_INPUT_PATH, "r");
-        *mainMemoryOutputFile = openFile(DEFAULT_MAIN_MEMORY_FILE_OUTPUT_PATH, "w");
-        *busTraceFile = openFile(DEFAULT_BUS_TRACE_PATH, "w");
+        *mainMemoryInputFile = openFile(DEFAULT_MAIN_MEMORY_FILE_INPUT_PATH, 'r');
+        *mainMemoryOutputFile = openFile(DEFAULT_MAIN_MEMORY_FILE_OUTPUT_PATH, 'w');
+        *busTraceFile = openFile(DEFAULT_BUS_TRACE_PATH, 'w');
         for (int i = 0; i < NUM_OF_CORES; i++)
         {
             char coreNumStr[MAX_PATH_SIZE] = "";
-            sprintf_s(coreNumStr, sizeof(coreNumStr), "%d", i);
+
+
+            
+            snprintf(coreNumStr, sizeof(coreNumStr), "%d", i);
 
             char instructionMemoryFilePath[MAX_PATH_SIZE] = "";
-            strcat_s(instructionMemoryFilePath, sizeof(instructionMemoryFilePath), DEFAULT_INSTRUCTION_MEMORY_FILE_PATH_PREFIX);
-            strcat_s(instructionMemoryFilePath, sizeof(instructionMemoryFilePath), coreNumStr);
-            strcat_s(instructionMemoryFilePath, sizeof(instructionMemoryFilePath), ".txt");
-            instructionMemoryFiles[i] = openFile(instructionMemoryFilePath, "r");
+            strncat(instructionMemoryFilePath, DEFAULT_INSTRUCTION_MEMORY_FILE_PATH_PREFIX, sizeof(instructionMemoryFilePath) - 1);
+            strncat(instructionMemoryFilePath, coreNumStr, sizeof(instructionMemoryFilePath) - 1);
+            strncat(instructionMemoryFilePath, ".txt", sizeof(instructionMemoryFilePath) - 1);
+            instructionMemoryFiles[i] = openFile(instructionMemoryFilePath, 'r');
 
             char registerFilePath[MAX_PATH_SIZE] = "";
-            strcat_s(registerFilePath, sizeof(registerFilePath), DEFAULT_REGISTER_FILE_PATH_PREFIX);
-            strcat_s(registerFilePath, sizeof(registerFilePath), coreNumStr);
-            strcat_s(registerFilePath, sizeof(registerFilePath), ".txt");
-            registerFiles[i] = openFile(registerFilePath, "w");
+            strncat(registerFilePath, DEFAULT_REGISTER_FILE_PATH_PREFIX, sizeof(registerFilePath) - 1);
+            strncat(registerFilePath, coreNumStr, sizeof(registerFilePath) - 1);
+            strncat(registerFilePath, ".txt", sizeof(registerFilePath) - 1);
+            registerFiles[i] = openFile(registerFilePath, 'w');
 
             char coreTraceFilePath[MAX_PATH_SIZE] = "";
-            strcat_s(coreTraceFilePath, sizeof(coreTraceFilePath), DEFAULT_CORE_TRACE_FILE_PATH_PREFIX);
-            strcat_s(coreTraceFilePath, sizeof(coreTraceFilePath), coreNumStr);
-            strcat_s(coreTraceFilePath,sizeof(coreTraceFilePath), DEFAULT_CORE_TRACE_FILE_PATH_SUFFIX);
-            coreTraceFiles[i] = openFile(coreTraceFilePath, "w");
+            strncat(coreTraceFilePath, DEFAULT_CORE_TRACE_FILE_PATH_PREFIX, sizeof(coreTraceFilePath) - 1);
+            strncat(coreTraceFilePath, coreNumStr, sizeof(coreTraceFilePath) - 1);
+            strncat(coreTraceFilePath, DEFAULT_CORE_TRACE_FILE_PATH_SUFFIX, sizeof(coreTraceFilePath) - 1);
+            coreTraceFiles[i] = openFile(coreTraceFilePath, 'w');
 
             char dataCacheFilePath[MAX_PATH_SIZE] = "";
-            strcat_s(dataCacheFilePath, sizeof(dataCacheFilePath), DEFAULT_DSRAM_CACHE_FILE_PATH_PREFIX);
-            strcat_s(dataCacheFilePath,sizeof(dataCacheFilePath), coreNumStr);
-            strcat_s(dataCacheFilePath, sizeof(dataCacheFilePath), ".txt");
-            dataCacheFiles[i] = openFile(dataCacheFilePath, "w");
+            strncat(dataCacheFilePath, DEFAULT_DSRAM_CACHE_FILE_PATH_PREFIX, sizeof(dataCacheFilePath) - 1);
+            strncat(dataCacheFilePath, coreNumStr, sizeof(dataCacheFilePath) - 1);
+            strncat(dataCacheFilePath, ".txt", sizeof(dataCacheFilePath) - 1);
+            dataCacheFiles[i] = openFile(dataCacheFilePath, 'w');
 
             char statusCacheFilePath[MAX_PATH_SIZE] = "";
-            strcat_s(statusCacheFilePath, sizeof(statusCacheFilePath), DEFAULT_TSRAM_CACHE_FILE_PATH_PREFIX);
-            strcat_s(statusCacheFilePath, sizeof(statusCacheFilePath), coreNumStr);
-            strcat_s(statusCacheFilePath, sizeof(statusCacheFilePath), ".txt");
-            statusCacheFiles[i] = openFile(statusCacheFilePath, "w");
+            strncat(statusCacheFilePath, DEFAULT_TSRAM_CACHE_FILE_PATH_PREFIX, sizeof(statusCacheFilePath) - 1);
+            strncat(statusCacheFilePath, coreNumStr, sizeof(statusCacheFilePath) - 1);
+            strncat(statusCacheFilePath, ".txt", sizeof(statusCacheFilePath) - 1);
+            statusCacheFiles[i] = openFile(statusCacheFilePath, 'w');
 
             char statsFilePath[MAX_PATH_SIZE] = "";
-            strcat_s(statsFilePath, sizeof(statsFilePath), DEFAULT_TSRAM_CACHE_FILE_PATH_PREFIX);
-            strcat_s(statsFilePath, sizeof(statsFilePath), coreNumStr);
-            strcat_s(statsFilePath, sizeof(statsFilePath), ".txt");
-            statsFiles[i] = openFile(statsFilePath, "w");
+            strncat(statsFilePath, DEFAULT_TSRAM_CACHE_FILE_PATH_PREFIX, sizeof(statsFilePath) - 1);
+            strncat(statsFilePath, coreNumStr, sizeof(statsFilePath) - 1);
+            strncat(statsFilePath, ".txt", sizeof(statsFilePath) - 1);
+            statsFiles[i] = openFile(statsFilePath, 'w');
         }
     }
     else if (argc == 28)
     {
-        *mainMemoryInputFile = openFile(argv[5], "r");
-        *mainMemoryOutputFile = openFile(argv[6], "w");
-        *busTraceFile = openFile(argv[15], "w");
+        *mainMemoryInputFile = openFile(argv[5], 'r');
+        *mainMemoryOutputFile = openFile(argv[6], 'w');
+        *busTraceFile = openFile(argv[15], 'w');
         for (int i = 0; i < NUM_OF_CORES; i++)
         {
-            instructionMemoryFiles[i] = openFile(argv[1 + i], "r");
-            registerFiles[i] = openFile(argv[7 + i], "w");
-            coreTraceFiles[i] = openFile(argv[11 + i], "w");
-            dataCacheFiles[i] = openFile(argv[16 + i], "w");
-            statusCacheFiles[i] = openFile(argv[20 + i], "w");
-            statsFiles[i] = openFile(argv[24 + i], "w");
+            instructionMemoryFiles[i] = openFile(argv[1 + i], 'r');
+            registerFiles[i] = openFile(argv[7 + i], 'w');
+            coreTraceFiles[i] = openFile(argv[11 + i], 'w');
+            dataCacheFiles[i] = openFile(argv[16 + i], 'w');
+            statusCacheFiles[i] = openFile(argv[20 + i], 'w');
+            statsFiles[i] = openFile(argv[24 + i], 'w');
         }
     }
     else
@@ -198,7 +203,7 @@ void getAllFileDescritpors(int argc,
     }
 }
 
-void loadInstructionMemory(FILE* instructionMemoryFile, int** instructionMemory)
+void loadInstructionMemory(FILE* instructionMemoryFile, uint32_t* instructionMemory)
 {
     int address = 0;
     while (address < INSTRUCTION_MEMORY_DEPTH)
@@ -210,21 +215,21 @@ void loadInstructionMemory(FILE* instructionMemoryFile, int** instructionMemory)
         if (!notEndOfFile)
             instruction = 0;
         
-        (*instructionMemory)[address] = instruction;
+        instructionMemory[address] = instruction;
         address++;
     }
 }
 
-void loadCoresImemory(Core** cores, FILE* instructionMemoryFiles[NUM_OF_CORES]) {
+void loadCoresImemory(Core (*cores)[NUM_OF_CORES], FILE* instructionMemoryFiles[NUM_OF_CORES]) {
     for (int i = 0; i < NUM_OF_CORES; i++)
     {
-        loadInstructionMemory(instructionMemoryFiles[i], cores[i]);
+        loadInstructionMemory(instructionMemoryFiles[i], cores[i]->InstructionMemory);
     }
 }
 
 void loadMainMemory(FILE* mainMemoryFile, MainMemory* mem)
 {
-    int address = 0;
+    uint32_t address = 0;
     while (address < (sizeof(mem) / sizeof(uint32_t)))
     {
         uint32_t data = 0;
@@ -241,8 +246,8 @@ void loadMainMemory(FILE* mainMemoryFile, MainMemory* mem)
 
 void writeMainMemory(FILE* mainMemoryFile, MainMemory* mem)
 {
-    int address = 0;
-    while (address < (sizeof(mem) / sizeof(uint32_t)))
+    uint32_t address = 0;
+    while (address < (sizeof(mem) / (sizeof(uint32_t))))
     {
         uint32_t data = (*mem).memory[address];
 
@@ -264,30 +269,30 @@ void writeRegisterFile(FILE* registerFile, uint32_t* registerArr)
 void writeCoreTrace(FILE* coreTraceFile,Core* core, CorePipeLine* pipeline, uint32_t cycle)
 {
     char cycleStr[MAX_PATH_SIZE] = "";
-    sprintf_s(cycleStr, sizeof(cycleStr), "%d", cycle);
-    fprintf(coreTraceFile, cycle);
+    snprintf(cycleStr, sizeof(cycleStr), "%d", cycle);
+    fprintf(coreTraceFile, "%s", cycleStr);
     fprintf(coreTraceFile, " ");
 
     char instructionAddressTmpString[4];
     instructionAddressTmpString[3] = '\0';
     numberToHexString(pipeline->fetch_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
-    fprintf(coreTraceFile, instructionAddressTmpString);
+    fprintf(coreTraceFile, "%s", instructionAddressTmpString);
     fprintf(coreTraceFile, " ");
 
     numberToHexString(pipeline->decode_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
-    fprintf(coreTraceFile, instructionAddressTmpString);
+    fprintf(coreTraceFile, "%s", instructionAddressTmpString);
     fprintf(coreTraceFile, " ");
 
     numberToHexString(pipeline->execute_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
-    fprintf(coreTraceFile, instructionAddressTmpString);
+    fprintf(coreTraceFile, "%s", instructionAddressTmpString);
     fprintf(coreTraceFile, " ");
 
     numberToHexString(pipeline->memory_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
-    fprintf(coreTraceFile, instructionAddressTmpString);
+    fprintf(coreTraceFile, "%s", instructionAddressTmpString);
     fprintf(coreTraceFile, " ");
 
     numberToHexString(pipeline->writeback_stage.state.inputState.instructionAddress, instructionAddressTmpString, 3);
-    fprintf(coreTraceFile, instructionAddressTmpString);
+    fprintf(coreTraceFile, "%s", instructionAddressTmpString);
 
     for(int i = 2; i < NUM_REGISTERS_PER_CORE; i++)
     {
@@ -296,7 +301,7 @@ void writeCoreTrace(FILE* coreTraceFile,Core* core, CorePipeLine* pipeline, uint
         numberToHexString(core->registers[i].now, registerInHexTmpStr, 8);
 
         fprintf(coreTraceFile, " ");
-        fprintf(coreTraceFile, registerInHexTmpStr);
+        fprintf(coreTraceFile, "%s", registerInHexTmpStr);
     }
 
     fprintf(coreTraceFile, "\n");

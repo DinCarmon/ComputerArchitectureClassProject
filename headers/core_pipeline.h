@@ -1,9 +1,10 @@
-#pragma once
+#ifndef CORE_PIPELINE
+#define CORE_PIPELINE
+
 #include <stdio.h>
-#include <stdlib.h> // For malloc and free
-#include <string.h> // For memset
+#include <stdlib.h>
+#include <string.h>
 #include "flip_flop.h"
-#include "defines.h"
 #include "writeback_stage.h"
 #include "fetch_stage.h"
 #include "decode_stage.h"
@@ -23,8 +24,6 @@ typedef struct {
 } CorePipeLine;
 
 // Function to initialize a Core instance
-CorePipeLine* pipe_create(int id);
+CorePipeLine pipe_create(int id);
 
-// Function to free allocated resources in a Core instance
-void pipe_destroy(Core* core);
-#pragma once
+#endif

@@ -19,34 +19,39 @@ int main(int argc, char* argv[]) {
 
     //get all file descriptors on write mode
     getAllFileDescritpors(argc, argv,
-        instructionMemoryFiles[NUM_OF_CORES],
-        mainMemoryInputFile,
-        mainMemoryOutputFile,
-        registerFiles[NUM_OF_CORES],
-        coreTraceFiles[NUM_OF_CORES],
-        busTraceFile,
-        dataCacheFiles[NUM_OF_CORES],
-        statusCacheFiles[NUM_OF_CORES],
-        statsFiles[NUM_OF_CORES]);
+        instructionMemoryFiles,
+        &mainMemoryInputFile,
+        &mainMemoryOutputFile,
+        registerFiles,
+        coreTraceFiles,
+        &busTraceFile,
+        dataCacheFiles,
+        statusCacheFiles,
+        statsFiles);
 
     ////create an array for the cores in the simulator
-    Core** cores = create_cores_array(NUM_OF_CORES);
-
-    //// Create an array of pointers to those existing requestors
-    BusRequestor** requestors = create_busrequestors_array(cores, NUM_OF_CORES);
+    Core cores[NUM_OF_CORES];
+    BusRequestor* requestors[NUM_OF_CORES];
+    for (int i = 0; i < NUM_OF_CORES; i++)
+    {
+        cores[i] = core_create(i + 1);
+        requestors[i] = &(cores[i].requestor);
+    }
 
     ////creating the main memory for the sim
-    MainMemory* main_memory = create_main_memory();
+    MainMemory main_memory = create_main_memory();
 
     //// load main memory
-    loadMainMemory(mainMemoryInputFile, main_memory);
+    loadMainMemory(mainMemoryInputFile, &main_memory);
 
     //// create bus manager
-    BusManager* manager = bus_manager_create(requestors, cores, main_memory);
+    BusManager manager = bus_manager_create(requestors, &cores, &main_memory);
 
     //// load all cores i memory
-    loadCoresImemory(cores, instructionMemoryFiles);
+    loadCoresImemory(&cores, instructionMemoryFiles);
 
 	//need to add corePipeLine creation
 
+
+    (void)manager;
 }

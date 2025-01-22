@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "stage_data.h"
-#include "cache.h"
+#include "cache_block.h"
 #include "bus_manager.h"
 
 /**

@@ -1,5 +1,7 @@
-#include "cache.h"
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "cache_block.h"
 
 // Function to create and initialize a Cache instance
 Cache cache_create(void) {
@@ -41,6 +43,12 @@ int in_cache(uint32_t address, Cache* cache) {
 int get_state(uint32_t address, Cache* cache) {
     int index = get_index(address);  // Get the index from the address
     int tag = get_tag(address);  // Get the tag from the address
+
+    if (tag != cache->tsram[index].tag)
+    {
+        printf("Tried to get state of address which is not in cache");
+        exit(-1);
+    }
 
     return cache->tsram[index].state;  // Cache miss
 }
@@ -86,7 +94,8 @@ int write_cache(uint32_t address, Cache* cache, uint32_t data) {
 
 
 // Function to update state in cache
-void update_state(uint32_t address, Cache* cache, uint32_t state) {
+void update_state(uint32_t address, Cache* cache, uint32_t state)
+{
     // First check if the address is in the cache
 
     int index = get_index(address);  // Get the index from the address
@@ -100,4 +109,9 @@ void update_state(uint32_t address, Cache* cache, uint32_t state) {
 
 
     return;
+}
+
+int get_first_address_in_block(Cache* cache, int index)
+{
+    return ((cache->tsram[index].tag * DSRAM_SIZE) + index * BLOCK_SIZE);
 }

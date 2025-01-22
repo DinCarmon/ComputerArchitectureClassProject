@@ -50,28 +50,21 @@ include_directories(${CMAKE_SOURCE_DIR}/headers)
 # Set the source files (all C files in the src directory)
 set(SOURCE_FILES
     src/main.c
-
-    src/
-    .c
     src/instruction.c
-
     src/fetch_stage.c
     src/decode_stage.c
     src/execute_stage.c
     src/memory_stage.c
     src/writeback_stage.c
     src/instruction.c
-
     src/file_handler.c
     src/bus_manager.c
-    src/bus_request.c
     src/bus_requestor.c
     src/bus_snooper.c
-    src/cache.c
+    src/cache_block.c
     src/core.c
     src/main_memory.c
-    src/project.c
 )
 
 # Create an executable target from the source files
-add_executable(ComputerArchitectureClassProjectExecutable ${CMAKE_SOURCE_DIR}/src/main.c)
+add_executable(ComputerArchitectureClassProjectExecutable ${SOURCE_FILES})

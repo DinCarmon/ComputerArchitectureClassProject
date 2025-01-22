@@ -1,12 +1,12 @@
-#pragma once
-#include "defines.h"
+#ifndef BUS_MANAGER_H
+#define BUS_MANAGER_H
+
 #include "bus_requestor.h"
 #include "main_memory.h"
-#include "cache.h"
+#include "constants.h"
+#include "cache_block.h"
 #include "core.h"
 #include "flip_flop.h"
-
-
 
 typedef struct {
     uint32_t LastTransactionCycle;  // The last cycle a transaction occurred. // 
@@ -19,19 +19,16 @@ typedef struct {
     FlipFlop_uint32_t bus_addr;              // Address involved in the bus transaction
     FlipFlop_uint32_t bus_data;              // Data being transferred on the bus.
     FlipFlop_uint32_t bus_line_addr;           // the address that will go on the bus lines
-    uint32_t core_turn;             // Core that has the current turn
+    int32_t core_turn;             // Core that has the current turn
     uint32_t numOfCyclesInSameStatus; // cycels in one transaction
-    BusRequestor* requestors[NUM_REQUESTORS]; // Fixed array of BusRequestors
-    BusRequestor* enlisted_requestors[NUM_REQUESTORS]; // List of enlisted BusRequestors
-    Core* cores[NUM_REQUESTORS];     // fiexed array of caches
+    BusRequestor* requestors[NUM_OF_CORES]; // Fixed array of BusRequestors
+    BusRequestor* enlisted_requestors[NUM_OF_CORES]; // List of enlisted BusRequestors
+    Core* cores[NUM_OF_CORES];     // fiexed array of caches
     MainMemory* main_memory;             // pointer to the main memory
 } BusManager;
 
 // Function to create and initialize a BusManager
-BusManager* bus_manager_create(BusRequestor** requestors, Core** cores, MainMemory* main_memory);
-
-// Function to release manager memory
-void bus_manager_destroy(BusManager* manager);
+BusManager bus_manager_create(BusRequestor** requestors, Core (*cores)[NUM_OF_CORES], MainMemory* main_memory);
 
 // Function to reset the BusManager (e.g., after a transaction)
 void bus_manager_reset(BusManager* manager);
@@ -53,7 +50,7 @@ void FinishBusEnlisting(BusManager* manager);
 void WriteBusLines(BusManager* manager, BusRequestor* requestor);
 
 // Function to write to the bus data line
-void writeBusData(BusManager* manager, int32_t diff, bool read, Cache* cache);
+void writeBusData(BusManager* manager, bool read, Cache* cache);
 
 // Function to advance the bus to the next cycle
 void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue);
@@ -66,3 +63,5 @@ void Enlist(BusRequestor* requestor, int addr, int BusActionType, BusManager* ma
 
 // Function for the BusSnooper to snoop and react to bus commands
 void snoop(BusSnooper* snooper, Cache* cache, BusManager* manager);
+
+#endif
