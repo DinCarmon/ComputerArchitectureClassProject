@@ -15,4 +15,6 @@ typedef struct stageData {
 
 } StageData;
 
+void configure_stage_data(StageData* stage, struct core* myCore);
+
 #endif

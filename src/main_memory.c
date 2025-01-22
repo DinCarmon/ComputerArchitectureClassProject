@@ -1,16 +1,12 @@
 #include "main_memory.h"
 
 // Function to create and initialize MainMemory
-MainMemory create_main_memory() {
-    // Allocate memory for MainMemory structure
-    MainMemory main_memory;
-
+void reset_main_memory(MainMemory* mem)
+{
     // Initialize all memory rows to zero
     for (size_t i = 0; i < MEMORY_SIZE; i++) {
-        main_memory.memory[i] = 0;
+        mem->memory[i] = 0;
     }
-
-    return main_memory;
 }
 
 // Function to read from MainMemory

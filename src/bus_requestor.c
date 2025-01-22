@@ -2,21 +2,19 @@
 
 
 // Function to create and initialize a BusRequestor on the heap
-BusRequestor bus_requestor_create(int id) {
-    BusRequestor requestor;
-
+void configure_bus_requestor(BusRequestor* requestor, struct core* myCore)
+{
     // Initialize BusRequestor fields
-    requestor.operation = 0;  // Default operation
-    requestor.address = 0;    // Default address
-    requestor.start_cycle = 0; // Default start cycle
-    requestor.IsRequestOnBus.now = false;
-    requestor.IsRequestOnBus.updated = false;
-    requestor.LastCycle.now = false;
-    requestor.LastCycle.updated = false;
-    requestor.priority = -1; // Default priority
-    requestor.id = id; // Set the provided ID
+    requestor->operation = 0;  // Default operation
+    requestor->address = 0;    // Default address
+    requestor->start_cycle = 0; // Default start cycle
+    requestor->IsRequestOnBus.now = false;
+    requestor->IsRequestOnBus.updated = false;
+    requestor->LastCycle.now = false;
+    requestor->LastCycle.updated = false;
+    requestor->priority = -1; // Default priority
 
-    return requestor;
+    requestor->myCore = myCore;
 }
 
 // Function to check if the BusRequestor is already occupied

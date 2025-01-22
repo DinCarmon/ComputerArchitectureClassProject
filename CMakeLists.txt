@@ -65,6 +65,8 @@ set(SOURCE_FILES
     src/core.c
     src/main_memory.c
     src/simulator.c
+    src/pipeline_object.c
+    src/stage_data.c
 )
 
 # Create an executable target from the source files

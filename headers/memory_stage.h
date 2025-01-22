@@ -13,13 +13,13 @@
 typedef struct memoryStage
 {
     struct stageData state;
-
-    /**
-     * @return Should stall?
-     */
-    bool (*doOperation)(struct memoryStage* self);
 } MemoryStage;
 
-MemoryStage createMemoryStage();
+void configure_memory_stage(MemoryStage* stage, struct core* myCore);
+
+/**
+ * @return Should stall?
+ */
+bool do_memory_operation(MemoryStage* self);
 
 #endif

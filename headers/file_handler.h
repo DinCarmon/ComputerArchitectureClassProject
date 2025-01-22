@@ -7,6 +7,7 @@
 
 #include "constants.h"
 #include "main_memory.h"
+#include "bus_manager.h"
 
 struct core;
 
@@ -111,7 +112,7 @@ void loadInstructionMemory(FILE* instructionMemoryFile, uint32_t* instructionMem
  * @param mainMemoryFile  File to read from (in hex).
  * @param mem             Pointer to a MainMemory structure.
  */
-void loadMainMemory(FILE* mainMemoryFile, MainMemory* mem);
+void load_main_memory_from_file(FILE* mainMemoryFile, MainMemory* mem);
 
 /**
  * Writes the contents of the main memory structure to a file (in hex).
@@ -127,18 +128,28 @@ void writeMainMemory(FILE* mainMemoryFile, MainMemory* mem);
  * @param registerFile    File to write to.
  * @param registerArr     Array of register values.
  */
-void writeRegisterFile(FILE* registerFile, uint32_t* registerArr);
+void writeRegisterFile(FILE* registerFile, FlipFlop_uint32_t* registerArr);
 
 /**
  * Writes a single line of core trace info (pipeline stage addresses, registers, etc.) to a file.
  *
  * @param coreTraceFile   File to write the trace line to.
  * @param core            Pointer to the Core whose state is being traced.
- * @param cycle           The current cycle number (for logging).
  */
-void writeCoreTrace(FILE* coreTraceFile, Core* core, uint32_t cycle);
+void write_core_trace_line(FILE* coreTraceFile,
+                           Core* core,
+                           FlipFlop_bool stalling[NUM_OF_STAGES_PER_CORE - 1]);
+
+void write_bus_trace_line(FILE* bus_trace_file,
+                          BusManager* manager);
 
 // load instructionmemory for all cores
-void loadCoresImemory(struct core (*cores)[NUM_OF_CORES], FILE* instructionMemoryFiles[NUM_OF_CORES]);
+void load_cores_instruction_memory_from_files(struct core cores[NUM_OF_CORES], FILE* instructionMemoryFiles[NUM_OF_CORES]);
+
+void write_data_cache_file(FILE* cache_file,
+                           Cache* cache);
+
+void write_status_cache_file(FILE* cache_file,
+                             Cache* cache);
 
 #endif /* FILE_HANDLER_H */

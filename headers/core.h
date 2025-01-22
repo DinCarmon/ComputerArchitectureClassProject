@@ -36,12 +36,17 @@ typedef struct core {
     BusSnooper snooper;
 
     struct busManager* bus_manager;
+
+    uint64_t* p_cycle;
+    uint64_t halt_cycle;                // The cycle in which a halt arrived to the writeback stage the operation of the core was finished.
+
+    uint64_t num_of_instructions_executed;
 } Core;
 
 // Function to initialize a Core instance
-Core core_create(int id);
+void configure_core(Core* core, int id, struct busManager* manager);
 
 // Function to advance the core to the next cycle
-void advance_core(Core* core, bool keep_value);
+void advance_core(Core* core, FlipFlop_bool stalling[NUM_OF_STAGES_PER_CORE - 1]);
 
 #endif

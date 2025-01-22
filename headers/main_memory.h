@@ -13,7 +13,7 @@ typedef struct {
 } MainMemory;
 
 // Function to create and initialize the main memory
-MainMemory create_main_memory();
+void reset_main_memory(MainMemory* mem);
 
 // Function to read a block from cache to the main memory
 void main_memory_read(MainMemory* mem, Cache* cache, uint32_t address, uint32_t state);

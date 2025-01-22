@@ -20,4 +20,6 @@ typedef struct pipelineObjectState {
     uint32_t memoryRetrieved;           // Data retrieved from memory
 } PipelineObjectState;
 
+void configure_pipeline_object(PipelineObjectState* pipeline_object);
+
 #endif

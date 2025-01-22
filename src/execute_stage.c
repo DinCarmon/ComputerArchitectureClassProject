@@ -111,7 +111,7 @@ void performALUOperation(ExecuteStage* self)
     }
 }
 
-bool doExecuteOperation(ExecuteStage* self)
+bool do_execute_operation(ExecuteStage* self)
 {
     // First copy the output state from the input state.
     // Later update the output state with operation needed to be
@@ -123,10 +123,7 @@ bool doExecuteOperation(ExecuteStage* self)
     return false;       // Execute stage never stalls
 }
 
-ExecuteStage createExecuteStage()
+void configure_execute_stage(ExecuteStage* stage, struct core* myCore)
 {
-    ExecuteStage stage;
-    stage.doOperation = doExecuteOperation;
-
-    return stage;
+    configure_stage_data(&(stage->state), myCore);
 }

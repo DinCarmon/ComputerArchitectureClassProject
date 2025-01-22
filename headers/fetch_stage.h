@@ -12,13 +12,13 @@
 typedef struct fetchStage
 {
     struct stageData state;
-
-    /**
-     * @return Should stall?
-     */
-    bool (*doOperation)(struct fetchStage* self);
 } FetchStage;
 
-FetchStage createFetchStage();
+void configure_fetch_stage(FetchStage* stage, struct core* myCore);
+
+/**
+ * @return Should stall?
+ */
+bool do_fetch_operation(FetchStage* self);
 
 #endif

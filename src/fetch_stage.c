@@ -2,7 +2,7 @@
 #include "instruction.h"
 #include "core.h"
 
-bool doFetchOperation(FetchStage* self)
+bool do_fetch_operation(FetchStage* self)
 {
     uint32_t instructionCodex = (self->state.myCore->InstructionMemory[self->state.myCore->pc_register.now]);
     Instruction inst = createInstruction(instructionCodex);
@@ -20,10 +20,7 @@ bool doFetchOperation(FetchStage* self)
     return false;
 }
 
-FetchStage createFetchStage()
+void configure_fetch_stage(FetchStage* stage, struct core* myCore)
 {
-    FetchStage stage;
-    stage.doOperation = doFetchOperation;
-
-    return stage;
+    configure_stage_data(&(stage->state), myCore);
 }

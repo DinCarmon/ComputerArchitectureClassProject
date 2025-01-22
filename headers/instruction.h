@@ -21,4 +21,6 @@ typedef struct instruction {
 
 Instruction createInstruction(uint32_t instructionCodex);
 
+void configure_instruction(Instruction* inst);
+
 #endif

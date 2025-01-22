@@ -6,7 +6,7 @@
 // Define the TSRAM memory - The data structure holding metadata on block in cache
 // structure: tag and state
 typedef struct tagState {
-    uint32_t tag : TAG_SIZE;    // Tag bits (12 bits)
+    uint32_t tag : TAG_FIELD_SIZE_IN_BITS;    // Tag bits (12 bits)
     uint32_t state : STATE_SIZE; // State bits (2 bits)
 } TagState;
 
@@ -18,8 +18,8 @@ typedef struct cache {
 
 // Function declarations
 
-// Function to create and initialize a Cache instance
-Cache cache_create(void);
+// Function to  initialize a Cache instance
+void reset_cache(Cache* c);
 
 // Function to extract the tag from an address  
 int get_tag(uint32_t address);

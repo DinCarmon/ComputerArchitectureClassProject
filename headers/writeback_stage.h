@@ -12,13 +12,13 @@
 typedef struct writeBackStage
 {
     struct stageData state;
-
-    /**
-     * @return Should stall?
-     */
-    bool (*doOperation)(struct writeBackStage* self);
 } WriteBackStage;
 
-WriteBackStage createWriteBackStage();
+void configure_writeback_stage(WriteBackStage* stage, struct core* myCore);
+
+/**
+ * @return Should stall?
+ */
+bool do_write_back_operation(WriteBackStage* self);
 
 #endif

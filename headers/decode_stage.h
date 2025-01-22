@@ -14,13 +14,13 @@ struct stageData;
 typedef struct decodeStage
 {
     struct stageData state;
-
-    /**
-     * @return Should stall?
-     */
-    bool (*doOperation)(struct decodeStage* self, Instruction execInst, Instruction memInst, Instruction wbInst);
 } DecodeStage;
 
-DecodeStage createDecodeStage();
+void configure_decode_stage(DecodeStage* stage, struct core* myCore);
+
+/**
+ * @return Should stall?
+ */
+bool do_decode_operation(DecodeStage* self);
 
 #endif

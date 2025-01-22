@@ -101,11 +101,11 @@ bool check_RAW_Hazard(Instruction instNow, Instruction unfinishedInst)
     return false;
 }
 
-bool isDataHazard(DecodeStage* self, Instruction execInst, Instruction memInst, Instruction wbInst)
+bool isDataHazard(DecodeStage* self)
 {
-    return  check_RAW_Hazard(self->state.inputState.instruction, execInst) ||
-            check_RAW_Hazard(self->state.inputState.instruction, memInst) ||
-            check_RAW_Hazard(self->state.inputState.instruction, wbInst); 
+    return  check_RAW_Hazard(self->state.inputState.instruction, self->state.myCore->execute_stage.state.inputState.instruction) ||
+            check_RAW_Hazard(self->state.inputState.instruction, self->state.myCore->memory_stage.state.inputState.instruction) ||
+            check_RAW_Hazard(self->state.inputState.instruction, self->state.myCore->writeback_stage.state.inputState.instruction); 
 }
 
 void updatePCtoRdValue(DecodeStage* self)
@@ -203,15 +203,14 @@ void doOperationsOfJumpInstructions(DecodeStage* self)
     }
 }
 
-bool doDecodeOperation(DecodeStage* self, Instruction execInst, Instruction memInst, Instruction wbInst)
-//to din i edited so it will need get these extra parameters due to circular dependency
+bool do_decode_operation(DecodeStage* self)
 {
     // First copy the output state from the input state.
     // Later update the output state with operation needed to be
     // done at this round
     self->state.outputState = self->state.inputState;
 
-    if (isDataHazard(self, execInst, memInst, wbInst))
+    if (isDataHazard(self))
         return true;
 
     updateRegisterValues_decode(self);
@@ -221,10 +220,7 @@ bool doDecodeOperation(DecodeStage* self, Instruction execInst, Instruction memI
     return false;
 }
 
-DecodeStage createDecodeStage()
+void configure_decode_stage(DecodeStage* stage, struct core* myCore)
 {
-    DecodeStage stage;
-    stage.doOperation = doDecodeOperation;
-
-    return stage;
+    configure_stage_data(&(stage->state), myCore);
 }

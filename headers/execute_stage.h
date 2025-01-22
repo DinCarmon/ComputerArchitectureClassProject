@@ -14,13 +14,13 @@ struct stageData;
 typedef struct executeStage
 {
     struct stageData state;
-
-    /**
-     * @return Should stall?
-     */
-    bool (*doOperation)(struct executeStage* self);
 } ExecuteStage;
 
-ExecuteStage createExecuteStage();
+void configure_execute_stage(ExecuteStage* stage, struct core* myCore);
+
+/**
+ * @return Should stall?
+ */
+bool do_execute_operation(ExecuteStage* self);
 
 #endif

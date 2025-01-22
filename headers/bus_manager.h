@@ -26,39 +26,27 @@ typedef struct busManager {
     BusRequestor* enlisted_requestors[NUM_OF_CORES];    // List of enlisted BusRequestors
     struct core* cores[NUM_OF_CORES];                   // fixed array of caches
     MainMemory* main_memory;                            // pointer to the main memory
+
+    uint64_t* p_cycle;
 } BusManager;
 
 // Function to create and initialize a BusManager
-BusManager bus_manager_create(struct core (*cores)[NUM_OF_CORES], MainMemory* main_memory);
-
-// Function to reset the BusManager (e.g., after a transaction)
-void bus_manager_reset(BusManager* manager);
-
-
-// Function to arrange the priorities of the requestors based on the bus_origid
-void arrangePriorities(BusManager* manager);
-
-// Function to reset the enlisted_requestors list to zero
-void resetEnlistedRequestors(BusManager* manager);
+void configure_bus_manager(BusManager* manager, struct core** cores, MainMemory* main_memory);
 
 // Function to assign the core with the lowest priority to core_turn
-void FinishBusEnlisting(BusManager* manager);
-
-// Function to write to the bus line after a requestor is chosen
-void WriteBusLines(BusManager* manager, BusRequestor* requestor);
+void do_bus_operation(BusManager* manager);
 
 // Function to write to the bus data line
 void writeBusData(BusManager* manager, bool read, Cache* cache);
 
 // Function to advance the bus to the next cycle
-void AdvanceBusToNextCycle(BusManager* manager, int currentCycle, bool KeepValue);
-
-// Function to get the state that needed to be put in the cache
-uint32_t StateToUpdate(BusManager* manager);
+void advance_bus_to_next_cycle(BusManager* manager);
 
 // Function to request an action from the bus (sets the request operation and address)
 void Enlist(BusRequestor* requestor, int addr, int BusActionType, BusManager* manager);
 
+void write_next_cycle_of_bus(BusManager* manager);
 
+void finish_bus_enlisting(BusManager* manager);
 
 #endif

@@ -99,7 +99,7 @@ bool handleCacheMiss(MemoryStage* self)
     return false;
 }
 
-bool doMemoryOperation(MemoryStage* self)
+bool do_memory_operation(MemoryStage* self)
 {
     // First copy the output state from the input state.
     // Later update the output state with operation needed to be
@@ -126,10 +126,7 @@ bool doMemoryOperation(MemoryStage* self)
     return false;
 }
 
-MemoryStage createMemoryStage()
+void configure_memory_stage(MemoryStage* stage, struct core* myCore)
 {
-    MemoryStage stage;
-    stage.doOperation = doMemoryOperation;
-
-    return stage;
+    configure_stage_data(&(stage->state), myCore);
 }

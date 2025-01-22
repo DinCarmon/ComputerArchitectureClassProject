@@ -39,3 +39,14 @@ Instruction createInstruction(uint32_t instructionCodex)
     inst.parseCmd(&inst, instructionCodex);
     return inst;
 }
+
+void configure_instruction(Instruction* inst)
+{
+    inst->codex = 0;
+    inst->immediate = 0;
+    inst->opcode = 0;
+    inst->parseCmd = 0;
+    inst->rdIdx = 0;
+    inst->rtIdx = 0;
+    inst->rsIdx = 0;
+}

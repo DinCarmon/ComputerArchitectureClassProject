@@ -4,16 +4,23 @@
 #include "cache_block.h"
 
 // Function to create and initialize a Cache instance
-Cache cache_create(void) {
-    Cache new_cache = { 0 };  // Initialize all fields to zero
-    return new_cache;
+void reset_cache(Cache* c) {
+    for (int i = 0; i < DSRAM_SIZE; i++)
+    {
+        c->dsram[i] = 0;
+    }
+    for (int i = 0; i < TSRAM_SIZE; i++)
+    {
+        c->tsram[i].state = 0;
+        c->tsram[i].tag = 0;
+    }
 }
 
 // Function to extract the tag from an address  
 int get_tag(uint32_t address) {
     // Shift the address right by the number of bits for index and block offset,
     // then mask to ensure only the tag bits are kept (12 bits for tag).
-    return (address >> (INDEX_SIZE + BLOCK_OFFSET_SIZE)) & ((1 << TAG_SIZE) - 1);
+    return (address >> (INDEX_SIZE + BLOCK_OFFSET_SIZE)) & ((1 << TAG_FIELD_SIZE_IN_BITS) - 1);
 }
 
 int get_block_offset(uint32_t address) {

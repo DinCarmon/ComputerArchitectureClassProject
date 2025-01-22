@@ -30,7 +30,7 @@
 #define BUS_ORIGIN_ID_LINE_SIZE_IN_BITS      3
 #define BUS_CMD_LINE_SIZE_IN_BITS            2
 #define BUS_ADDRESS_LINE_SIZE_IN_BITS        20           // (log(MEMORY_DEPTH) / LOG2)
-#define BUS_DATA_LINE_SIZE_IN_BITS           32
+#define BUS_DATA_LINE_SIZE_IN_BITS           WORD_SIZE_IN_BITS
 #define BUS_SHARED_LINE_SIZE_IN_BITS         1
 
 // Block constants
@@ -41,6 +41,8 @@
 #define INDEX_BIT_LENGTH                     6            // ((log(DATA_CACHE_NUM_OF_BLOCKS_IN_CACHE) / LOG2))
 #define TAG_FIELD_SIZE_IN_BITS               12           // ((log(MEMORY_DEPTH) / LOG2) - (log(DATA_CACHE_DEPTH) / LOG2))
 #define STATUS_BITS_SIZE_FOR_BLOCK           2
+
+#define NUM_OF_STAGES_PER_CORE               5
 
 // Default instruction memory file prefix
 #define DEFAULT_INSTRUCTION_MEMORY_FILE_PATH_PREFIX    "imem"
@@ -149,7 +151,6 @@ typedef enum busBlockSharingStatus {
 #define DSRAM_SIZE         256  // Number of cache lines in DSRAM (256 rows)
 #define TSRAM_SIZE         64   // Number of cache lines in TSRAM (64 rows)
 #define WORD_SIZE          4    // Size of a word in bytes (1 word = 4 bytes)
-#define TAG_SIZE           12   // Tag size in bits
 #define INDEX_SIZE         6    // Index size in bits (64 rows in TSRAM)
 #define BLOCK_OFFSET_SIZE  2    // Block offset size in bits (4 bytes per word)
 #define STATE_SIZE         2    // State size in bits (Modified, Exclusive, Shared, Invalid)

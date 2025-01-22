@@ -27,7 +27,7 @@ void updateRegisterValues_writeback(WriteBackStage* self)
     }
 }
 
-bool doWriteBackOperation(WriteBackStage* self)
+bool do_write_back_operation(WriteBackStage* self)
 {
     // First copy the output state from the input state.
     // Later update the output state with operation needed to be
@@ -36,13 +36,15 @@ bool doWriteBackOperation(WriteBackStage* self)
 
 	updateRegisterValues_writeback(self);
 
+    if (self->state.inputState.instruction.opcode == Halt)
+    {
+        self->state.myCore->halt_cycle = *(self->state.myCore->p_cycle);
+    }
+
     return false;       // write back never stalls
 }
 
-WriteBackStage createWriteBackStage()
+void configure_writeback_stage(WriteBackStage* stage, struct core* myCore)
 {
-    WriteBackStage stage;
-    stage.doOperation = doWriteBackOperation;
-
-    return stage;
+    configure_stage_data(&(stage->state), myCore);
 }

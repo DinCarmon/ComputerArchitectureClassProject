@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "flip_flop.h"
 
+struct core;
 
 // Definition of the BusRequestor struct
 typedef struct {
@@ -15,10 +16,11 @@ typedef struct {
     FlipFlop_bool LastCycle;             // is it the last cycle of the request. // 
     bool busRequestInTransaction_now;  // True if a bus request was already sent, waiting to end
     int priority;                     // Priority of the bus requestor
-    int id;                           // Identifier for the BusRequestor
+    
+    struct core* myCore;
 } BusRequestor;
 // Function to create and initialize a BusRequestor
-BusRequestor bus_requestor_create(int id);
+void configure_bus_requestor(BusRequestor* bus_requestor, struct core* myCore);
 
 // Function to check if the request is over, if it is resest the requestor
 bool BusRequestOver(BusRequestor* requestor);
