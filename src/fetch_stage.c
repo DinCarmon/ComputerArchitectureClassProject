@@ -31,7 +31,7 @@ bool do_fetch_operation(FetchStage* self)
     {
         self->state.myCore->pc_register.updated = self->state.myCore->pc_register.now;
     }
-        
+    
     return false;
 }
 

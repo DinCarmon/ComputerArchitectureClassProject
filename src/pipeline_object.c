@@ -1,6 +1,6 @@
 #include "pipeline_object.h"
 
-void configure_pipeline_object(PipelineObjectState* pipeline_object)
+void reset_pipeline_object(PipelineObjectState* pipeline_object)
 {
     pipeline_object->aluOperationOutput = 0;
     pipeline_object->instructionAddress = 0;
@@ -9,5 +9,5 @@ void configure_pipeline_object(PipelineObjectState* pipeline_object)
     pipeline_object->rsValue = 0;
     pipeline_object->rtValue = 0;
 
-    configure_instruction(&(pipeline_object->instruction));
+    reset_instruction(&(pipeline_object->instruction));
 }

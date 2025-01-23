@@ -56,11 +56,23 @@ void advance_core(Core* core,
                   int64_t last_insuccesful_memory_execution,
                   int64_t last_insuccesful_decode_execution)
 {
+    if (last_succesful_fetch_execution == (int64_t)*(core->p_cycle))
+        reset_pipeline_object(&(core->fetch_stage.state.inputState));
+    if (last_succesful_decode_execution == (int64_t)*(core->p_cycle))
+        reset_pipeline_object(&(core->decode_stage.state.inputState));
+    if (last_succesful_execute_execution == (int64_t)*(core->p_cycle))
+        reset_pipeline_object(&(core->execute_stage.state.inputState));
+    if (last_succesful_memory_execution == (int64_t)*(core->p_cycle))
+        reset_pipeline_object(&(core->memory_stage.state.inputState));
+    if (last_succesful_writeback_execution == (int64_t)*(core->p_cycle))
+        reset_pipeline_object(&(core->writeback_stage.state.inputState));
+
     // Update flip flops between stages
     if ((last_succesful_fetch_execution == (int64_t)*(core->p_cycle) &&
          last_insuccesful_decode_execution != (int64_t)*(core->p_cycle)) ||
         (last_succesful_decode_execution == (int64_t)*(core->p_cycle)))
         core->decode_stage.state.inputState = core->fetch_stage.state.outputState;
+        
     if ((last_succesful_decode_execution == (int64_t)*(core->p_cycle)) ||
         (last_insuccesful_decode_execution == (int64_t)*(core->p_cycle) &&
          last_succesful_execute_execution == (int64_t)*(core->p_cycle) ))

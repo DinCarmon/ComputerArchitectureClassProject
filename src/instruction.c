@@ -50,7 +50,7 @@ Instruction create_instruction(uint32_t instructionCodex)
     return inst;
 }
 
-void configure_instruction(Instruction* inst)
+void reset_instruction(Instruction* inst)
 {
     inst->codex = 0;
     inst->immediate = 0;

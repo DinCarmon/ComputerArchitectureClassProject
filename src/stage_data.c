@@ -2,7 +2,7 @@
 
 void configure_stage_data(StageData* stage, struct core* myCore)
 {
-    configure_pipeline_object(&(stage->inputState));
-    configure_pipeline_object(&(stage->outputState));
+    reset_pipeline_object(&(stage->inputState));
+    reset_pipeline_object(&(stage->outputState));
     stage->myCore = myCore;
 }
