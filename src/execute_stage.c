@@ -1,5 +1,7 @@
 #include <math.h>
+#include <stdio.h>
 #include "execute_stage.h"
+#include "core.h"
 
 /**
  * The function is needed for alu operations.
@@ -11,7 +13,7 @@ int32_t uintToInt(uint32_t num)
 
     if (num >= (uint32_t)pow(2, 31))
     {
-        int64_t tmp = (int64_t)num;
+        int64_t tmp = 0;
         // sign2 complement:
         tmp = - (int64_t)pow(2,31) + (int64_t)(num - (uint32_t)pow(2,31));
         ret = (int32_t)tmp;
@@ -29,11 +31,7 @@ int32_t uintToInt(uint32_t num)
  */
 uint32_t intTouint(int32_t num)
 {
-    if (num >= 0)
-        return (uint32_t)num;
-    uint32_t ret = (uint32_t)pow(2, 31);
-    ret += (num + (int32_t)pow(2, 31));
-    return ret;
+    return (uint32_t)num;
 }
 
 /**

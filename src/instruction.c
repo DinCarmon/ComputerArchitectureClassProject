@@ -8,7 +8,8 @@
  * @param codex 32-bit instruction
  * @return Parsed instruction object
  */
-void parseCmdToInstruction(Instruction* self, uint32_t codex) {
+void parseCmdToInstruction(Instruction* self, uint32_t codex)
+{
     self->codex = codex;
 
     self->immediate = codex % (uint32_t)(pow(2, IMMEDIATE_FIELD_SIZE_IN_BITS));
@@ -41,11 +42,11 @@ void parseCmdToInstruction(Instruction* self, uint32_t codex) {
  * @param instructionCodex The instruction codex
  * @return the instruction parsed. 
  */
-Instruction createInstruction(uint32_t instructionCodex)
+Instruction create_instruction(uint32_t instructionCodex)
 {
     Instruction inst;
-    inst.parseCmd = parseCmdToInstruction;
-    inst.parseCmd(&inst, instructionCodex);
+    inst.parse_cmd = parseCmdToInstruction;
+    inst.parse_cmd(&inst, instructionCodex);
     return inst;
 }
 
@@ -54,7 +55,7 @@ void configure_instruction(Instruction* inst)
     inst->codex = 0;
     inst->immediate = 0;
     inst->opcode = 0;
-    inst->parseCmd = 0;
+    inst->parse_cmd = 0;
     inst->rdIdx = 0;
     inst->rtIdx = 0;
     inst->rsIdx = 0;

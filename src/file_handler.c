@@ -49,9 +49,9 @@ uint32_t hexStringToUint32(char* string)
         char digit = string[i];
 
         uint8_t digitInt = 0;
-        if (digit > '0' && digit <= '9')
+        if (digit >= '0' && digit <= '9')
             digitInt = digit - '0';
-        if (digit > 'A' && digit <= 'F')
+        if (digit >= 'A' && digit <= 'F')
             digitInt = digit - 'A' + 10;
 
         num *= 16;

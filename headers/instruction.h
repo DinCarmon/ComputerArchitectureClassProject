@@ -16,10 +16,10 @@ typedef struct instruction {
     uint32_t        immediate;          // Immediate value
     uint32_t        codex;              // Codex - original representation of the instruction
 
-    void (*parseCmd)(struct instruction* self, uint32_t codex);
+    void (*parse_cmd)(struct instruction* self, uint32_t codex);
 } Instruction;
 
-Instruction createInstruction(uint32_t instructionCodex);
+Instruction create_instruction(uint32_t instructionCodex);
 
 void configure_instruction(Instruction* inst);
 
