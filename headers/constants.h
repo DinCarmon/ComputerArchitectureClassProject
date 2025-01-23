@@ -136,15 +136,21 @@ typedef enum busBlockSharingStatus {
     BlockIsShared       = 1
 } BusBlockSharingStatus;
 
+/**
+ * Bus state machine states
+ */
+typedef enum busState {
+    BUS_FREE                = 1,    // The bus is free and available for use
+    BUS_RD                  = 2,    // The bus is performing a read operation
+    BUS_RDX                 = 3,    // The bus is performing a read-exclusive operation
+    BUS_INVALID             = 4,    // The bus is in an invalid state (e.g., error state or not in use)
+    BUS_FLUSH               = 5,	// the bus is performing flush
+    BUS_BEFORE_FLUSH        = 6,    // the bus is goint to flush
+    BUS_CACHE_INTERRUPTED   = 7,    // The state when a cache in mode m interupted and sent data
+    BUS_WRITE               = 8     // the bus is writing data
+} BusState;
 // Define bus status constants in uppercase
-#define BUS_FREE   1    // The bus is free and available for use
-#define BUS_RD     2    // The bus is performing a read operation
-#define BUS_RDX    3    // The bus is performing a read-exclusive operation
-#define BUS_INVALID 4   // The bus is in an invalid state (e.g., error state or not in use)
-#define BUS_FLUSH 5		// the bus is performing flush
-#define BUS_BEFORE_FLUSH 6 // the bus is goint to flush
-#define BUS_CACHE_INTERRUPTED 7 // The state when a cache in mode m interupted and sent data
-#define BUS_WRITE 8             // the bus is writing data
+
 
 
 // Constants for cache configuration

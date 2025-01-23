@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "bus_snooper.h"
-#include "bus_manager.c"
+#include "bus_manager.h"
+#include "core.h"
 
 // Function to create and initialize a BusSnooper on the heap
 void configure_bus_snooper(BusSnooper* snooper, struct core* myCore)
