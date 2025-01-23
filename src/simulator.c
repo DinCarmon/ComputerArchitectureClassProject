@@ -34,6 +34,7 @@ void initialize_simulator_objects(int argc, char* argv[],
     // load main memory
     reset_main_memory(main_memory);
     load_main_memory_from_file(*main_memory_input_file, main_memory);
+    fclose(*main_memory_input_file);
 
     configure_bus_manager(bus_manager, cores, main_memory);
 
@@ -56,6 +57,8 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
     int64_t last_insuccesful_memory_execution[NUM_OF_CORES];
     int64_t last_insuccesful_decode_execution[NUM_OF_CORES];
 
+    bool core_finished[NUM_OF_CORES];
+
     // Update cores and bus manager with the cycle instance and initiate simulator meta parameters
     bus_manager->p_cycle = &cycle;
     for(int i = 0; i < NUM_OF_CORES; i++)
@@ -68,6 +71,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
         last_succesful_fetch_execution[i] = -1;
         last_insuccesful_memory_execution[i] = -1;
         last_insuccesful_decode_execution[i] = -1;
+        core_finished[i] = false;
     }
 
     while(true)
@@ -76,7 +80,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
         bool end_simulation = true;
         for (int i = 0; i < NUM_OF_CORES; i++)
         {
-            if (cores[i].writeback_stage.state.inputState.instruction.opcode != Halt)
+            if (cores[i].writeback_stage.state.outputState.instruction.opcode != Halt)
             {
                 end_simulation = false;
                 break;
@@ -138,9 +142,6 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
             }
         }
 
-        if(cycle == 2)
-            printf("hi");
-
         if (is_open_for_start_of_new_enlisting(bus_manager))
             finish_bus_enlisting(bus_manager);
 
@@ -150,11 +151,16 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
         }
 
         write_next_cycle_of_bus(bus_manager);
-        
+
         // 3. Log everthing
         for (int i = 0; i < NUM_OF_CORES; i++)
         {
-            if (cores[i].writeback_stage.state.outputState.instruction.opcode != Halt)
+            if ((cores[i].writeback_stage.state.outputState.instruction.opcode != Halt) ||
+                (cores[i].writeback_stage.state.outputState.instruction.opcode == Halt &&
+                 core_finished[i] == false))
+            {
+                if (cores[i].writeback_stage.state.outputState.instruction.opcode == Halt)
+                    core_finished[i] = true;
                 write_core_trace_line(core_trace_files[i],
                                         &(cores[i]),
                                         last_succesful_writeback_execution[i],
@@ -164,6 +170,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
                                         last_succesful_fetch_execution[i],
                                         last_insuccesful_memory_execution[i],
                                         last_insuccesful_decode_execution[i]);
+            }     
         }
         write_bus_trace_line(bus_trace_file, bus_manager);
 
@@ -182,6 +189,12 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
 
         cycle++;
     }
+
+    fclose(bus_trace_file);
+    for(int i = 0; i < NUM_OF_CORES; i++)
+    {
+        fclose(core_trace_files[i]);
+    }
 }
 
 void write_simulator_summary_files(FILE* register_files[NUM_OF_CORES],
@@ -194,19 +207,24 @@ void write_simulator_summary_files(FILE* register_files[NUM_OF_CORES],
 {
     writeMainMemory(main_memory_output_file,
                     main_memory);
+    fclose(main_memory_output_file);
     
     for (int i = 0; i < NUM_OF_CORES; i++)
     {
         writeRegisterFile(register_files[i],
                           cores[i].registers);
+        fclose(register_files[i]);
 
         write_data_cache_file(data_cache_files[i],
                               &(cores[i].cache_now));
+        fclose(data_cache_files[i]);
 
         write_status_cache_file(status_cache_files[i],
                                  &(cores[i].cache_now));
+        fclose(status_cache_files[i]);
 
         write_stats_file(stats_files[i], &(cores[i]));
+        fclose(stats_files[i]);
     }
 }
 

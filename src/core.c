@@ -24,7 +24,7 @@ void configure_core(Core* core, int id, BusManager* bus_manager)
 
     for (int i = 0; i < INSTRUCTION_MEMORY_DEPTH; i++)
     {
-        core->InstructionMemory[i] = 0;
+        core->instruction_memory[i] = 0;
     }
 
     // Initialize the caches

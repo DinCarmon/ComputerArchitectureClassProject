@@ -22,7 +22,7 @@ typedef struct core {
     int id;                          //core id
     FlipFlop_uint32_t pc_register;    // flip flop to hold the program counter
     FlipFlop_uint32_t registers[32];            //flip flop to hold the state of the registers
-    uint32_t InstructionMemory[1024];  // Instruction memory array
+    uint32_t instruction_memory[1024];  // Instruction memory array
     Cache cache_now;                // Pointer to the current cache
     Cache cache_updated;            // Pointer to the updated cache
 

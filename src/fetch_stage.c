@@ -4,7 +4,7 @@
 
 bool do_fetch_operation(FetchStage* self)
 {
-    uint32_t instructionCodex = (self->state.myCore->InstructionMemory[self->state.myCore->pc_register.now]);
+    uint32_t instructionCodex = (self->state.myCore->instruction_memory[self->state.myCore->pc_register.now]);
     Instruction inst = createInstruction(instructionCodex);
 
     self->state.outputState.instruction = inst;

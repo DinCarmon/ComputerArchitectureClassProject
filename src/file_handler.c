@@ -206,7 +206,7 @@ void get_all_file_descriptors(int argc,
     }
 }
 
-void loadInstructionMemory(FILE* instructionMemoryFile, uint32_t* instructionMemory)
+void load_instruction_memory(FILE* instructionMemoryFile, uint32_t* instructionMemory)
 {
     int address = 0;
     while (address < INSTRUCTION_MEMORY_DEPTH)
@@ -226,7 +226,8 @@ void loadInstructionMemory(FILE* instructionMemoryFile, uint32_t* instructionMem
 void load_cores_instruction_memory_from_files(Core cores[NUM_OF_CORES], FILE* instruction_memory_files[NUM_OF_CORES]) {
     for (int i = 0; i < NUM_OF_CORES; i++)
     {
-        loadInstructionMemory(instruction_memory_files[i], cores[i].InstructionMemory);
+        load_instruction_memory(instruction_memory_files[i], cores[i].instruction_memory);
+        fclose(instruction_memory_files[i]);
     }
 }
 
@@ -250,7 +251,7 @@ void load_main_memory_from_file(FILE* mainMemoryFile, MainMemory* mem)
 void writeMainMemory(FILE* mainMemoryFile, MainMemory* mem)
 {
     uint32_t address = 0;
-    while (address < (sizeof(mem) / (sizeof(uint32_t))))
+    while (address < MEMORY_DEPTH)
     {
         uint32_t data = (*mem).memory[address];
 

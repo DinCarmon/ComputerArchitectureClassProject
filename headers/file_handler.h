@@ -104,7 +104,7 @@ void get_all_file_descriptors(int argc,
  * @param instructionMemoryFile   File containing the instructions (in hex).
  * @param instructionMemory       Pointer to an integer array to store the instructions.
  */
-void loadInstructionMemory(FILE* instructionMemoryFile, uint32_t* instructionMemory);
+void load_instruction_memory(FILE* instructionMemoryFile, uint32_t* instructionMemory);
 
 /**
  * Loads data from a file into the main memory structure.

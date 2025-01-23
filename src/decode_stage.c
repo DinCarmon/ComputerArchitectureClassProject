@@ -121,7 +121,7 @@ void updatePCtoRdValue(DecodeStage* self)
  */
 void handleEdgeCaseOfHaltInDelaySlot(DecodeStage* self)
 {
-    uint32_t fetchedInstructionCodex = self->state.myCore->InstructionMemory[self->state.myCore->pc_register.now];
+    uint32_t fetchedInstructionCodex = self->state.myCore->instruction_memory[self->state.myCore->pc_register.now];
     Instruction fetchedInst = createInstruction(fetchedInstructionCodex);
     if (fetchedInst.opcode == Halt)
     {
