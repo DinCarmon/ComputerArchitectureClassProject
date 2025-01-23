@@ -3,7 +3,7 @@
 #include "core.h"
 
 
-void configure_bus_manager(BusManager* manager, struct core** cores, MainMemory* main_memory)
+void configure_bus_manager(BusManager* manager, Core cores[NUM_OF_CORES], MainMemory* main_memory)
 {
     // Initialize bus attributes
     manager->last_transaction_on_bus_cycle = 0;
@@ -32,7 +32,7 @@ void configure_bus_manager(BusManager* manager, struct core** cores, MainMemory*
 
     // Assign the provided requestors
     for (int i = 0; i < NUM_OF_CORES; ++i) {
-        manager->requestors[i] = &(cores[i]->requestor);
+        manager->requestors[i] = &(cores[i].requestor);
     }
 }
 
@@ -50,14 +50,10 @@ void reset_enlisted_requestors(BusManager* manager) {
 
 // Function to arrange the priorities of the requestors based on the bus_origid
 void arrange_priorities(BusManager* manager) {
-    if (!manager || manager->bus_origid.updated < 0 || 
-        manager->bus_origid.updated >= NUM_OF_CORES)
-    {
-        printf("error in arrange priorities inputs");
-        exit(EXIT_FAILURE);
-    }
+    if (manager->core_turn.updated == -1) // i.e no one request to enlist and therefore there is no need to rearrange priorities
+        return;
 
-    int originIndex = manager->bus_origid.updated;
+    int originIndex = manager->core_turn.updated;
     int originPriority = manager->requestors[originIndex]->priority;
 
     for (int i = 0; i < NUM_OF_CORES; ++i) {
@@ -149,6 +145,16 @@ void write_next_cycle_of_bus(BusManager* manager)
     {
         case BUS_FREE:
         {
+            // I.E if the bus should stay free
+            if (manager->core_turn.updated == -1)
+            {
+                manager->bus_status.updated = BUS_FREE;
+                manager->bus_cmd.updated = NO_CMD;
+                manager->bus_line_addr.updated = 0;
+                manager->bus_data.updated = 0;
+                manager->bus_origid.updated = 0;
+                manager->bus_shared.updated = BLOCK_NOT_SHARED;
+            }
             break;
         }
         case BUS_RD:

@@ -48,38 +48,38 @@ void configure_core(Core* core, int id, BusManager* bus_manager)
 
 // Function to advance the core to the next cycle
 void advance_core(Core* core,
-                  uint64_t last_succesful_writeback_execution,
-                  uint64_t last_succesful_memory_execution,
-                  uint64_t last_succesful_execute_execution,
-                  uint64_t last_succesful_decode_execution,
-                  uint64_t last_succesful_fetch_execution,
-                  uint64_t last_insuccesful_memory_execution,
-                  uint64_t last_insuccesful_decode_execution)
+                  int64_t last_succesful_writeback_execution,
+                  int64_t last_succesful_memory_execution,
+                  int64_t last_succesful_execute_execution,
+                  int64_t last_succesful_decode_execution,
+                  int64_t last_succesful_fetch_execution,
+                  int64_t last_insuccesful_memory_execution,
+                  int64_t last_insuccesful_decode_execution)
 {
     // Update flip flops between stages
-    if ((last_succesful_fetch_execution == *(core->p_cycle) &&
-         last_insuccesful_decode_execution != *(core->p_cycle)) ||
-        (last_succesful_decode_execution == *(core->p_cycle)))
+    if ((last_succesful_fetch_execution == (int64_t)*(core->p_cycle) &&
+         last_insuccesful_decode_execution != (int64_t)*(core->p_cycle)) ||
+        (last_succesful_decode_execution == (int64_t)*(core->p_cycle)))
         core->decode_stage.state.inputState = core->fetch_stage.state.outputState;
-    if ((last_succesful_decode_execution == *(core->p_cycle)) ||
-        (last_insuccesful_decode_execution == *(core->p_cycle) &&
-         last_succesful_execute_execution == *(core->p_cycle) ))
+    if ((last_succesful_decode_execution == (int64_t)*(core->p_cycle)) ||
+        (last_insuccesful_decode_execution == (int64_t)*(core->p_cycle) &&
+         last_succesful_execute_execution == (int64_t)*(core->p_cycle) ))
         core->execute_stage.state.inputState = core->decode_stage.state.outputState;
-    if ((last_succesful_execute_execution == *(core->p_cycle) &&
-         last_insuccesful_memory_execution != *(core->p_cycle)) ||
-        (last_succesful_memory_execution == *(core->p_cycle)))
+    if ((last_succesful_execute_execution == (int64_t)*(core->p_cycle) &&
+         last_insuccesful_memory_execution != (int64_t)*(core->p_cycle)) ||
+        (last_succesful_memory_execution == (int64_t)*(core->p_cycle)))
         core->memory_stage.state.inputState = core->execute_stage.state.outputState;
-    if ((last_succesful_memory_execution == *(core->p_cycle)) ||
-        (last_insuccesful_memory_execution == *(core->p_cycle) &&
-         last_succesful_writeback_execution == *(core->p_cycle) ))
+    if ((last_succesful_memory_execution == (int64_t)*(core->p_cycle)) ||
+        (last_insuccesful_memory_execution == (int64_t)*(core->p_cycle) &&
+         last_succesful_writeback_execution == (int64_t)*(core->p_cycle) ))
         core->writeback_stage.state.inputState = core->memory_stage.state.outputState;
 
     // Update the num of stalls
-    if(last_insuccesful_decode_execution == *(core->p_cycle))
+    if(last_insuccesful_decode_execution == (int64_t)*(core->p_cycle))
     {
         core->num_of_decode_stage_stalls++;
     }
-    if(last_insuccesful_memory_execution == *(core->p_cycle))
+    if(last_insuccesful_memory_execution == (int64_t)*(core->p_cycle))
     {
         core->num_of_memory_stage_stalls++;
     }

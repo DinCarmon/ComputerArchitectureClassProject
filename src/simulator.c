@@ -8,20 +8,20 @@ void initialize_simulator_objects(int argc, char* argv[],
                                   FILE* data_cache_files[NUM_OF_CORES],
                                   FILE* status_cache_files[NUM_OF_CORES],
                                   FILE* stats_files[NUM_OF_CORES],
-                                  FILE* main_memory_input_file,
-                                  FILE* main_memory_output_file,
-                                  FILE* bus_trace_file,
+                                  FILE** main_memory_input_file,
+                                  FILE** main_memory_output_file,
+                                  FILE** bus_trace_file,
                                   Core cores[NUM_OF_CORES],
                                   MainMemory* main_memory,
                                   BusManager* bus_manager)
 {
     get_all_file_descriptors(argc, argv,
                              instruction_memory_files,
-                             &main_memory_input_file,
-                             &main_memory_output_file,
+                             main_memory_input_file,
+                             main_memory_output_file,
                              register_files,
                              core_trace_files,
-                             &bus_trace_file,
+                             bus_trace_file,
                              data_cache_files,
                              status_cache_files,
                              stats_files);
@@ -33,9 +33,9 @@ void initialize_simulator_objects(int argc, char* argv[],
 
     // load main memory
     reset_main_memory(main_memory);
-    load_main_memory_from_file(main_memory_input_file, main_memory);
+    load_main_memory_from_file(*main_memory_input_file, main_memory);
 
-    configure_bus_manager(bus_manager, (struct core**)cores, main_memory);
+    configure_bus_manager(bus_manager, cores, main_memory);
 
     // load all cores i memory
     load_cores_instruction_memory_from_files(cores, instruction_memory_files);
@@ -48,26 +48,26 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
 {
     uint64_t cycle = 1;
 
-    uint64_t last_succesful_writeback_execution[NUM_OF_CORES];
-    uint64_t last_succesful_memory_execution[NUM_OF_CORES];
-    uint64_t last_succesful_execute_execution[NUM_OF_CORES];
-    uint64_t last_succesful_decode_execution[NUM_OF_CORES];
-    uint64_t last_succesful_fetch_execution[NUM_OF_CORES];
-    uint64_t last_insuccesful_memory_execution[NUM_OF_CORES];
-    uint64_t last_insuccesful_decode_execution[NUM_OF_CORES];
+    int64_t last_succesful_writeback_execution[NUM_OF_CORES];
+    int64_t last_succesful_memory_execution[NUM_OF_CORES];
+    int64_t last_succesful_execute_execution[NUM_OF_CORES];
+    int64_t last_succesful_decode_execution[NUM_OF_CORES];
+    int64_t last_succesful_fetch_execution[NUM_OF_CORES];
+    int64_t last_insuccesful_memory_execution[NUM_OF_CORES];
+    int64_t last_insuccesful_decode_execution[NUM_OF_CORES];
 
     // Update cores and bus manager with the cycle instance and initiate simulator meta parameters
     bus_manager->p_cycle = &cycle;
     for(int i = 0; i < NUM_OF_CORES; i++)
     {
         cores[i].p_cycle = &cycle;
-        last_succesful_writeback_execution[i] = 0;
-        last_succesful_memory_execution[i] = 0;
-        last_succesful_execute_execution[i] = 0;
-        last_succesful_decode_execution[i] = 0;
-        last_succesful_fetch_execution[i] = 0;
-        last_insuccesful_memory_execution[i] = 0;
-        last_insuccesful_decode_execution[i] = 0;
+        last_succesful_writeback_execution[i] = -1;
+        last_succesful_memory_execution[i] = -1;
+        last_succesful_execute_execution[i] = -1;
+        last_succesful_decode_execution[i] = -1;
+        last_succesful_fetch_execution[i] = -1;
+        last_insuccesful_memory_execution[i] = -1;
+        last_insuccesful_decode_execution[i] = -1;
     }
 
     while(true)
@@ -79,6 +79,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
             if (cores[i].writeback_stage.state.inputState.instruction.opcode != Halt)
             {
                 end_simulation = false;
+                break;
             }
         }
         if (end_simulation == true)
@@ -89,7 +90,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
         // 2. Do operations of each core
         for(int i = 0; i < NUM_OF_CORES; i++)
         {
-            // Ensure every stage happends when not stalled, and has some input.
+            // Ensure every stage happends when it is not stalled, and it has some input.
             // This is crucial for correct statistics on core.
 
             if (cycle >= 5 &&
@@ -103,14 +104,14 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
                 last_succesful_execute_execution[i] >= last_succesful_memory_execution[i])
             {
                 bool memory_should_stall = do_memory_operation(&(cores[i].memory_stage));
-                if (memory_should_stall)
+                if (!memory_should_stall)
                     last_succesful_memory_execution[i] = cycle;   
                 else
                     last_insuccesful_memory_execution[i] = cycle;
             }
 
             if (cycle >= 3 &&
-                last_insuccesful_memory_execution[i] != cycle - 1 &&
+                last_insuccesful_memory_execution[i] != (int64_t)(cycle - 1) &&
                 last_succesful_decode_execution[i] >= last_succesful_execute_execution[i])
             {
                 do_execute_operation(&(cores[i].execute_stage));
@@ -118,24 +119,27 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
             }
 
             if (cycle >= 2 &&
-                last_insuccesful_memory_execution[i] != cycle - 1 &&
+                last_insuccesful_memory_execution[i] != (int64_t)(cycle - 1) &&
                 last_succesful_fetch_execution[i] >= last_succesful_decode_execution[i])
             {
                 bool decode_should_stall = do_decode_operation(&(cores[i].decode_stage));
-                if (decode_should_stall)
+                if (!decode_should_stall)
                     last_succesful_decode_execution[i] = cycle;
                 else
                     last_insuccesful_decode_execution[i] = cycle;   
             }
             
             if (cycle >= 1 &&
-                last_insuccesful_memory_execution[i] != cycle - 1 &&
-                last_insuccesful_decode_execution[i] != cycle -1)
+                last_insuccesful_memory_execution[i] != (int64_t)(cycle - 1) &&
+                last_insuccesful_decode_execution[i] != (int64_t)(cycle - 1))
             {
                 do_fetch_operation(&(cores[i].fetch_stage));
                 last_succesful_fetch_execution[i] = cycle;
             }
         }
+
+        if(cycle == 2)
+            printf("hi");
 
         if (is_open_for_start_of_new_enlisting(bus_manager))
             finish_bus_enlisting(bus_manager);
@@ -150,7 +154,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
         // 3. Log everthing
         for (int i = 0; i < NUM_OF_CORES; i++)
         {
-            if (cores[i].writeback_stage.state.inputState.instruction.opcode != Halt)
+            if (cores[i].writeback_stage.state.outputState.instruction.opcode != Halt)
                 write_core_trace_line(core_trace_files[i],
                                         &(cores[i]),
                                         last_succesful_writeback_execution[i],
@@ -164,7 +168,6 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
         write_bus_trace_line(bus_trace_file, bus_manager);
 
         // 4. Advance all flip flops, and cycle
-        cycle++;
         for(int i = 0; i < NUM_OF_CORES; i++)
         {
             advance_core(&(cores[i]), last_succesful_writeback_execution[i],
@@ -176,6 +179,8 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
                                       last_insuccesful_decode_execution[i]);
         }
         advance_bus_to_next_cycle(bus_manager);
+
+        cycle++;
     }
 }
 
@@ -239,9 +244,9 @@ void run_simulator(int argc, char* argv[])
                                  data_cache_files,
                                  status_cache_files,
                                  stats_files,
-                                 main_memory_input_file,
-                                 main_memory_output_file,
-                                 bus_trace_file,
+                                 &main_memory_input_file,
+                                 &main_memory_output_file,
+                                 &bus_trace_file,
                                  cores,
                                  &main_memory,
                                  &bus_manager);

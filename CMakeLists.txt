@@ -29,7 +29,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")                       # Include debug information in the binary
 
     # Optimization flags
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")                      # Optimize for speed (without breaking debuggability)
+    # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")                      # Optimize for speed (without breaking debuggability)
     
     # Additional security-related flags
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GLIBCXX_ASSERTIONS")    # Enable runtime checks for C++ assertions

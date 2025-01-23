@@ -56,12 +56,12 @@ void configure_core(Core* core, int id, struct busManager* manager);
 
 // Function to advance the core to the next cycle
 void advance_core(Core* core,
-                  uint64_t last_succesful_writeback_execution,
-                  uint64_t last_succesful_memory_execution,
-                  uint64_t last_succesful_execute_execution,
-                  uint64_t last_succesful_decode_execution,
-                  uint64_t last_succesful_fetch_execution,
-                  uint64_t last_insuccesful_memory_execution,
-                  uint64_t last_insuccesful_decode_execution);
+                  int64_t last_succesful_writeback_execution,
+                  int64_t last_succesful_memory_execution,
+                  int64_t last_succesful_execute_execution,
+                  int64_t last_succesful_decode_execution,
+                  int64_t last_succesful_fetch_execution,
+                  int64_t last_insuccesful_memory_execution,
+                  int64_t last_insuccesful_decode_execution);
 
 #endif

@@ -7,7 +7,6 @@
 #include "cache_block.h"
 #include "flip_flop.h"
 
-struct core;
 
 typedef struct busManager {
     uint32_t last_transaction_on_bus_cycle;             // The last cycle a transaction occurred (i.e. there was something on the bus).
@@ -28,7 +27,7 @@ typedef struct busManager {
 } BusManager;
 
 // Function to create and initialize a BusManager
-void configure_bus_manager(BusManager* manager, struct core** cores, MainMemory* main_memory);
+void configure_bus_manager(BusManager* manager, struct core* cores, MainMemory* main_memory);
 
 // function to call when bus needs to be interupted (state m and busrd/busrdx)
 void interrupt_bus(BusManager* manager, int32_t interruptor_id);

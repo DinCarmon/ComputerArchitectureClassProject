@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "instruction.h"
 
 /**
@@ -26,6 +28,13 @@ void parseCmdToInstruction(Instruction* self, uint32_t codex) {
     {
         self->immediate |= 0xFFFFF000;
     }
+
+    if (codex > Halt) // Assume all codexes are valid until halt, and not above
+    {
+        printf("Unrecognized codex");
+        exit(1);
+    }
+    self->opcode = codex;
 }
 
 /**

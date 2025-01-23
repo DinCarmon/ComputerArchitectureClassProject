@@ -22,9 +22,10 @@ CREATE_FLIP_FLOP_OF_TYPE(BusStatus)
 
 #define UPDATE_FLIP_FLOP(obj, defaultKeepPreviousValue)     \
    {                                                        \
+        obj.now = obj.updated;                              \
         if(!defaultKeepPreviousValue)                       \
             obj.updated = 0;                                \
-        obj.now = obj.updated;                              \
+                                                            \
    }
     
 

@@ -15,10 +15,10 @@ struct core;
  * Opens a file with the given path and mode.
  *
  * @param filePath  Path to the file.
- * @param mode      Single-character mode ('r', 'w', etc.).
+ * @param mode      Single-character mode ("r", "w", etc.).
  * @return          FILE pointer on success; NULL on error.
  */
-FILE* openFile(char* filePath, char mode);
+FILE* openFile(char* filePath, char* mode);
 
 /**
  * Checks whether a given string (up to length 8) contains only hexadecimal characters.
