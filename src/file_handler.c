@@ -280,14 +280,20 @@ void write_core_trace_line(FILE* coreTraceFile,
                            uint64_t last_insuccesful_memory_execution,
                            uint64_t last_insuccesful_decode_execution)
 {
+
     // Write cycle
     char cycleStr[MAX_PATH_SIZE] = "";
-    snprintf(cycleStr, sizeof(cycleStr), "%d", (int)*(core->p_cycle));
+    snprintf(cycleStr, sizeof(cycleStr), "%d", (int)*(core->p_cycle) - 1); // Why -1? trying to adjust to example. in there the cycles start at 0
     fprintf(coreTraceFile, "%s", cycleStr);
     fprintf(coreTraceFile, " ");
 
+    // The first if is for a weird edge case print style which can be seen at the given test example at core trace for core 0.
+    if (core->decode_stage.state.outputState.instruction.opcode == Halt &&
+        last_succesful_decode_execution == *(core->p_cycle))
+        writeInstructionAddressToFile(coreTraceFile,
+                                      core->pc_register.now + 1);
     // If fetch was not executed in this cycle print ---
-    if (last_succesful_fetch_execution != *(core->p_cycle))
+    else if (last_succesful_fetch_execution != *(core->p_cycle))
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
@@ -299,7 +305,8 @@ void write_core_trace_line(FILE* coreTraceFile,
     // Then print a ---
     if (((last_succesful_decode_execution != *(core->p_cycle)) &&
          (last_insuccesful_decode_execution != *(core->p_cycle))) ||
-        last_succesful_fetch_execution != *(core->p_cycle) ||
+        (last_succesful_fetch_execution != *(core->p_cycle) &&
+         core->fetch_stage.state.outputState.instruction.opcode != Halt) ||
         *(core->p_cycle) <= 1)
         fprintf(coreTraceFile, "---");
     else
@@ -320,7 +327,8 @@ void write_core_trace_line(FILE* coreTraceFile,
     // Then print a ---
     if (((last_succesful_memory_execution != *(core->p_cycle)) &&
          (last_insuccesful_memory_execution != *(core->p_cycle))) ||
-        last_succesful_execute_execution != *(core->p_cycle) ||
+        (last_succesful_execute_execution != *(core->p_cycle) &&
+         core->execute_stage.state.outputState.instruction.opcode != Halt) ||
         *(core->p_cycle) <= 3)
         fprintf(coreTraceFile, "---");
     else
@@ -334,7 +342,6 @@ void write_core_trace_line(FILE* coreTraceFile,
     else
         writeInstructionAddressToFile(coreTraceFile,
                                       core->writeback_stage.state.inputState.instructionAddress);
-    fprintf(coreTraceFile, " ");
 
     for(int i = 2; i < NUM_REGISTERS_PER_CORE; i++)
     {

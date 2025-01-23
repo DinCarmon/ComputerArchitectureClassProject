@@ -16,6 +16,8 @@ void configure_core(Core* core, int id, BusManager* bus_manager)
     core->num_write_hits = 0;
     core->num_write_miss = 0;
 
+    core->pc_registered_updated_by = -1;
+
     for (int i = 0; i < NUM_REGISTERS_PER_CORE; i++)
     {
         core->registers[i].now = 0;
@@ -97,7 +99,7 @@ void advance_core(Core* core,
     }
 
     // Update registers
-    UPDATE_FLIP_FLOP(core->pc_register, false);
+    UPDATE_FLIP_FLOP(core->pc_register, true);
     for (int i = 0; i < 32; i++) {
         UPDATE_FLIP_FLOP(core->registers[i], true);
     }
@@ -111,5 +113,7 @@ void advance_core(Core* core,
     {
         core->cache_now.tsram[i] = core->cache_updated.tsram[i];
     }
+
+    core->pc_registered_updated_by = -1;
 }
 

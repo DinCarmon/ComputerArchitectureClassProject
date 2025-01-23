@@ -49,6 +49,8 @@ typedef struct core {
     uint64_t num_write_hits;
     uint64_t num_read_miss;
     uint64_t num_write_miss;
+
+    int pc_registered_updated_by;               // -1 for none, 0 for fetch stage, 1 for decode stage
 } Core;
 
 // Function to initialize a Core instance

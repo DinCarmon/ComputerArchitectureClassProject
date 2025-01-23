@@ -25,7 +25,8 @@ bool do_fetch_operation(FetchStage* self)
     // Let the pc register stay in halt.
     if (inst.opcode != Halt)
     {
-        self->state.myCore->pc_register.updated = self->state.myCore->pc_register.now + 1;
+        if (self->state.myCore->pc_registered_updated_by != 1) // i.e the decode stage does not wish to change the pc register / did not run at this cycle yet
+            self->state.myCore->pc_register.updated = self->state.myCore->pc_register.now + 1;
     }
     else
     {

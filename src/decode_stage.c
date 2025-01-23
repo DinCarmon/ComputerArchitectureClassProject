@@ -18,6 +18,13 @@ void updateRegisterValues_decode(DecodeStage* self)
         self->state.outputState.rtValue = inst.immediate;
     else
         self->state.outputState.rtValue = self->state.myCore->registers[inst.rtIdx].now;
+
+    if (inst.rdIdx == ZERO_REGISTER_INDEX)
+        self->state.outputState.rdValue = 0;
+    else if (inst.rdIdx == IMMEDIATE_REGISTER_INDEX)
+        self->state.outputState.rdValue = inst.immediate;
+    else
+        self->state.outputState.rdValue = self->state.myCore->registers[inst.rdIdx].now;
 }
 
 bool check_RAW_Hazard(Instruction instNow, Instruction unfinishedInst)
@@ -112,6 +119,7 @@ void updatePCtoRdValue(DecodeStage* self)
 {
     // Update PC to branch target (lower 10 bits of rd)
     self->state.myCore->pc_register.updated = self->state.outputState.rdValue & 0x3FF;
+    self->state.myCore->pc_registered_updated_by = 1;
 }
 
 /**
@@ -126,6 +134,7 @@ void handleEdgeCaseOfHaltInDelaySlot(DecodeStage* self)
     if (fetchedInst.opcode == Halt)
     {
         self->state.myCore->pc_register.updated = self->state.myCore->pc_register.now;
+        self->state.myCore->pc_registered_updated_by = 1;
     }
 }
 
@@ -214,6 +223,9 @@ bool do_decode_operation(DecodeStage* self)
         return true;
 
     updateRegisterValues_decode(self);
+
+    if (*self->state.myCore->p_cycle == 2 && self->state.myCore->id == 0)
+        printf("hi");
 
     doOperationsOfJumpInstructions(self);
 
