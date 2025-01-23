@@ -58,3 +58,10 @@ dkms.conf
 build/
 
 .DS_Store
+
+example*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+MakeFile
+assembler_example/ComputerArchitectureClassProjectAssembler

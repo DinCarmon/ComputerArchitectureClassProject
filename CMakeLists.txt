@@ -4,12 +4,7 @@ cmake_minimum_required(VERSION 3.10.0)
 # Project name
 project(ComputerArchitectureClassProject VERSION 0.1.0 LANGUAGES C)
 
-# Specify the C standard to use
-set(CMAKE_C_STANDARD 99)
-
 cmake_minimum_required(VERSION 3.10)
-
-project(MyCProject C)
 
 # Set the C standard (adjust if needed)
 set(CMAKE_C_STANDARD 99)

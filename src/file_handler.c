@@ -287,7 +287,7 @@ void write_core_trace_line(FILE* coreTraceFile,
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
-                                      core->fetch_stage.state.inputState.instructionAddress);
+                                      core->pc_register.now);
     fprintf(coreTraceFile, " ");
 
     // If decode was not executed in this cycle or
