@@ -14,9 +14,11 @@
 CREATE_FLIP_FLOP_OF_TYPE(uint32_t)
 CREATE_FLIP_FLOP_OF_TYPE(CacheLineStatus)
 CREATE_FLIP_FLOP_OF_TYPE(CacheLine)
-//CREATE_FLIP_FLOP_OF_TYPE(TagState)
+CREATE_FLIP_FLOP_OF_TYPE(BusShareStatus)
+CREATE_FLIP_FLOP_OF_TYPE(BusCmd)
 CREATE_FLIP_FLOP_OF_TYPE(int32_t)
 CREATE_FLIP_FLOP_OF_TYPE(bool)
+CREATE_FLIP_FLOP_OF_TYPE(BusStatus)
 
 #define UPDATE_FLIP_FLOP(obj, defaultKeepPreviousValue)     \
    {                                                        \

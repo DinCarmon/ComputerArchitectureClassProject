@@ -368,7 +368,7 @@ void write_bus_trace_line(FILE* bus_trace_file,
 
     char bus_addr[6];
     bus_addr[5] = '\0';
-    numberToHexString(manager->bus_addr.now, bus_addr, 5);
+    numberToHexString(manager->bus_line_addr.now, bus_addr, 5);
     fprintf(bus_trace_file, "%s", bus_addr);
     fprintf(bus_trace_file, " ");
 

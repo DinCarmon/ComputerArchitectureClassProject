@@ -94,11 +94,10 @@ void advance_core(Core* core,
     UPDATE_FLIP_FLOP(core->snooper.busSnooperActive, true);
 
     // Update requestor
-    UPDATE_FLIP_FLOP(core->requestor.IsRequestOnBus, true);
-    UPDATE_FLIP_FLOP(core->requestor.LastCycle, true);
+    UPDATE_FLIP_FLOP(core->requestor.is_request_on_bus, true);
 
     // Update cache
-    for (int i = 0; i < DSRAM_SIZE; i++)
+    for (int i = 0; i < DATA_CACHE_WORD_DEPTH; i++)
     {
         core->cache_now.dsram[i] = core->cache_updated.dsram[i];
     }

@@ -28,7 +28,7 @@ void initialize_simulator_objects(int argc, char* argv[],
     
     for (int i = 0; i < NUM_OF_CORES; i++)
     {
-        configure_core(&(cores[i]), i + 1, bus_manager);
+        configure_core(&(cores[i]), i, bus_manager);
     }
 
     // load main memory
@@ -137,7 +137,8 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
             }
         }
 
-        finish_bus_enlisting(bus_manager);
+        if (is_open_for_start_of_new_enlisting(bus_manager))
+            finish_bus_enlisting(bus_manager);
 
         for(int i = 0; i < NUM_OF_CORES; i++)
         {

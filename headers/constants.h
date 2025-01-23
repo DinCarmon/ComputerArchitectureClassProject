@@ -24,6 +24,7 @@
 
 // Main memory constants
 #define WORD_SIZE_IN_BITS                    32
+#define WORD_SIZE                            (WORD_SIZE_IN_BITS / BYTE_SIZE_IN_BITS)    // Size of a word in bytes (1 word = 4 bytes)
 #define MEMORY_DEPTH                         1048576      // (pow(2, 20))
 
 // Bus constants
@@ -34,15 +35,19 @@
 #define BUS_SHARED_LINE_SIZE_IN_BITS         1
 
 // Block constants
-#define DATA_CACHE_WORD_DEPTH                256          // How many words in each data cache.
+#define DATA_CACHE_WORD_DEPTH                256          // How many words in each data cache.. This is the size of the dsram in words
 #define DATA_CACHE_BLOCK_DEPTH               4            // How many words in each block.
-#define OFFSET_BIT_LENGTH                    2            // ((log(DATA_CACHE_BLOCK_DEPTH) / LOG2))
+#define OFFSET_BIT_LENGTH                    2            
 #define DATA_CACHE_NUM_OF_BLOCKS_IN_CACHE    64           // Number of cache lines in TSRAM (64 rows)
-#define INDEX_BIT_LENGTH                     6            // ((log(DATA_CACHE_NUM_OF_BLOCKS_IN_CACHE) / LOG2))
+#define TSRAM_SIZE                           DATA_CACHE_NUM_OF_BLOCKS_IN_CACHE   // Number of cache lines in TSRAM - as the number of blocks the cache
+#define INDEX_BIT_LENGTH                     6            // ((log(DATA_CACHE_NUM_OF_BLOCKS_IN_CACHE) / LOG2)) - index size in bits
 #define TAG_FIELD_SIZE_IN_BITS               12           // ((log(MEMORY_DEPTH) / LOG2) - (log(DATA_CACHE_DEPTH) / LOG2))
-#define STATUS_BITS_SIZE_FOR_BLOCK           2
+#define STATE_SIZE                           2            // State size in bits (Modified, Exclusive, Shared, Invalid)
+#define BLOCK_OFFSET_SIZE                    2            // Block offset size in bits (4 bytes per word). // ((log(DATA_CACHE_BLOCK_DEPTH) / LOG2))
 
 #define NUM_OF_STAGES_PER_CORE               5
+
+#define MAIN_MEMORY_ANSWERING_DELAY          16
 
 // Default instruction memory file prefix
 #define DEFAULT_INSTRUCTION_MEMORY_FILE_PATH_PREFIX    "imem"
@@ -108,38 +113,39 @@ typedef enum cacheLineStatus {
  * BusOriginId - Identifies different originator of transaction on the bus
  * The enum value represents the value on the bus
  */
-//typedef enum busOriginId {
-//    Core0      = 0,
-//    Core1      = 1,
-//    Core2      = 2,
-//    Core3      = 3,
-//    MainMemory = 4
-//} BusOriginId;
+typedef enum busOriginId
+{
+    CORE_0_BUS_ORIGIN      = 0,
+    CORE_1_BUS_ORIGIN      = 1,
+    CORE_2_BUS_ORIGIN      = 2,
+    CORE_3_BUS_ORIGIN      = 3,
+    MAIN_MEMORY_BUS_ORIGIN = 4
+} BusOriginId;
 
 /**
  * Bus operation types for MESI protocol.
  * The enum value represents the value on the bus_cmd line.
  */
 typedef enum busCmd {
-    NoCmd   = 0,
-    BusRd   = 1,        // Bus read operation
-    BusRdX  = 2,        // Bus read exclusive operation
-    Flush   = 3         // Cache flush operation
+    NO_CMD   = 0,
+    BUS_RD_CMD   = 1,           // Bus read operation
+    BUS_RDX_CMD  = 2,           // Bus read exclusive operation
+    FLUSH_CMD   = 3             // Cache flush operation
 } BusCmd;
 
 /**
  * Bus encoding for whether the current transaction 
  * is of a block which is in another core cache
  */
-typedef enum busBlockSharingStatus {
-    BlockIsNotShared    = 0,    // Default value for the bus_shared line
-    BlockIsShared       = 1
-} BusBlockSharingStatus;
+typedef enum busShareStatus {
+    BLOCK_NOT_SHARED    = 0,    // Default value for the bus_shared line
+    BLOCK_SHARED       = 1
+} BusShareStatus;
 
 /**
  * Bus state machine states
  */
-typedef enum busState {
+typedef enum busStatus {
     BUS_FREE                = 1,    // The bus is free and available for use
     BUS_RD                  = 2,    // The bus is performing a read operation
     BUS_RDX                 = 3,    // The bus is performing a read-exclusive operation
@@ -148,18 +154,7 @@ typedef enum busState {
     BUS_BEFORE_FLUSH        = 6,    // the bus is goint to flush
     BUS_CACHE_INTERRUPTED   = 7,    // The state when a cache in mode m interupted and sent data
     BUS_WRITE               = 8     // the bus is writing data
-} BusState;
-// Define bus status constants in uppercase
+} BusStatus;
 
-
-
-// Constants for cache configuration
-#define DSRAM_SIZE         256  // Number of cache lines in DSRAM (256 rows)
-#define TSRAM_SIZE         64   // Number of cache lines in TSRAM (64 rows)
-#define WORD_SIZE          4    // Size of a word in bytes (1 word = 4 bytes)
-#define INDEX_SIZE         6    // Index size in bits (64 rows in TSRAM)
-#define BLOCK_OFFSET_SIZE  2    // Block offset size in bits (4 bytes per word)
-#define STATE_SIZE         2    // State size in bits (Modified, Exclusive, Shared, Invalid)
-#define BLOCK_SIZE		   4	// size of memory block
 
 #endif

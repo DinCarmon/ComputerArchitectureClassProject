@@ -9,13 +9,12 @@ struct core;
 
 // Definition of the BusRequestor struct
 typedef struct {
-    uint32_t operation;                       // Operation type (e.g., read, write, invalidate)
-    uint32_t address;                        // Address associated with the bus request
-    int start_cycle;                    // Cycle when the request started
-    FlipFlop_bool IsRequestOnBus;       // is the request granted
-    FlipFlop_bool LastCycle;             // is it the last cycle of the request. // 
-    bool busRequestInTransaction_now;  // True if a bus request was already sent, waiting to end
-    int priority;                     // Priority of the bus requestor
+    BusCmd operation;                           // Operation type (e.g., read, write, invalidate)
+    uint32_t address;                           // Address associated with the bus request
+    int start_cycle;                            // Cycle when the request started
+    FlipFlop_bool is_request_on_bus;            // is the request granted
+    bool busRequestInTransaction_now;           // True if a bus request was already sent, waiting to end
+    int priority;                               // Priority of the bus requestor
     
     struct core* myCore;
 } BusRequestor;

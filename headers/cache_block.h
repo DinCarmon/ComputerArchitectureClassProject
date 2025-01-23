@@ -12,7 +12,7 @@ typedef struct tagState {
 
 // Define the Cache structure
 typedef struct cache {
-    CacheLine dsram[DSRAM_SIZE];  // Data SRAM (256 rows of 1 word per row)
+    CacheLine dsram[DATA_CACHE_WORD_DEPTH];  // Data SRAM (256 rows of 1 word per row)
     TagState tsram[TSRAM_SIZE];   // Tag SRAM (64 rows, each 14 bits: 12 for tag + 2 for state)
 } Cache;
 

@@ -33,7 +33,7 @@ bool handleCacheHit(MemoryStage* self)
     // Therefore, we need to send a BusRdX command before we can move on
 
 	// checks if the wished busRdx transaction is on the bus right now.
-    if (self->state.myCore->requestor.IsRequestOnBus.now &&
+    if (self->state.myCore->requestor.is_request_on_bus.now &&
         self->num_of_cycles_on_same_command > 0)
     {
         write_cache(self->state.inputState.aluOperationOutput,
@@ -45,10 +45,11 @@ bool handleCacheHit(MemoryStage* self)
 
     // If we got here, it means the transaction was not sent yet.
     // Therefore, we try to enlist again for a bus transaciton.
-	Enlist(&(self->state.myCore->requestor),
-           self->state.inputState.aluOperationOutput,
-           BusRdX,
-           self->state.myCore->bus_manager);
+    if (is_open_for_start_of_new_enlisting(self->state.myCore->bus_manager))
+        enlist_to_bus(&(self->state.myCore->requestor),
+                      self->state.inputState.aluOperationOutput,
+                      BUS_RDX_CMD,
+                      self->state.myCore->bus_manager);
 
     // We need to stall. only in next round we shall now if we were granted access to the bus.
     self->num_of_cycles_on_same_command++;
@@ -58,7 +59,7 @@ bool handleCacheHit(MemoryStage* self)
 bool handleCacheMiss(MemoryStage* self)
 {
     // If we already sent the request, there is nothing to do, but wait for it to end.
-	if (self->state.myCore->requestor.IsRequestOnBus.now)
+	if (self->state.myCore->requestor.is_request_on_bus.now)
 	{
         self->num_of_cycles_on_same_command++;
 		return true;
@@ -72,11 +73,12 @@ bool handleCacheMiss(MemoryStage* self)
                                              self->state.inputState.aluOperationOutput),
                   &(self->state.myCore->cache_now)) == MODIFIED)
     {
-		Enlist(&(self->state.myCore->requestor), 
-               get_first_address_in_block(&(self->state.myCore->cache_now),
-                                          self->state.inputState.aluOperationOutput),
-               Flush,
-               self->state.myCore->bus_manager);
+        if (is_open_for_start_of_new_enlisting(self->state.myCore->bus_manager))
+            enlist_to_bus(&(self->state.myCore->requestor), 
+                          get_first_address_in_block(&(self->state.myCore->cache_now),
+                                                     self->state.inputState.aluOperationOutput),
+                          FLUSH_CMD,
+                          self->state.myCore->bus_manager);
         self->num_of_cycles_on_same_command++;
 		return true;
     }
@@ -86,19 +88,21 @@ bool handleCacheMiss(MemoryStage* self)
     
     if (self->state.inputState.instruction.opcode == Lw)
     {
-		Enlist(&(self->state.myCore->requestor),
-               self->state.inputState.aluOperationOutput,
-               BusRd,
-               self->state.myCore->bus_manager);
+        if (is_open_for_start_of_new_enlisting(self->state.myCore->bus_manager))
+            enlist_to_bus(&(self->state.myCore->requestor),
+                          self->state.inputState.aluOperationOutput,
+                          BUS_RD_CMD,
+                          self->state.myCore->bus_manager);
         self->num_of_cycles_on_same_command++;
         return true;
     }
     else if (self->state.inputState.instruction.opcode == Sw)
     {
-		Enlist(&(self->state.myCore->requestor),
-               self->state.inputState.aluOperationOutput,
-               BusRdX,
-               self->state.myCore->bus_manager);
+        if (is_open_for_start_of_new_enlisting(self->state.myCore->bus_manager))
+            enlist_to_bus(&(self->state.myCore->requestor),
+                          self->state.inputState.aluOperationOutput,
+                          BUS_RDX_CMD,
+                          self->state.myCore->bus_manager);
         self->num_of_cycles_on_same_command++;
         return true;
     }

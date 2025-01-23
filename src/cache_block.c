@@ -5,7 +5,7 @@
 
 // Function to create and initialize a Cache instance
 void reset_cache(Cache* c) {
-    for (int i = 0; i < DSRAM_SIZE; i++)
+    for (int i = 0; i < DATA_CACHE_WORD_DEPTH; i++)
     {
         c->dsram[i] = 0;
     }
@@ -20,7 +20,7 @@ void reset_cache(Cache* c) {
 int get_tag(uint32_t address) {
     // Shift the address right by the number of bits for index and block offset,
     // then mask to ensure only the tag bits are kept (12 bits for tag).
-    return (address >> (INDEX_SIZE + BLOCK_OFFSET_SIZE)) & ((1 << TAG_FIELD_SIZE_IN_BITS) - 1);
+    return (address >> (INDEX_BIT_LENGTH + BLOCK_OFFSET_SIZE)) & ((1 << TAG_FIELD_SIZE_IN_BITS) - 1);
 }
 
 int get_block_offset(uint32_t address) {
@@ -31,7 +31,7 @@ int get_block_offset(uint32_t address) {
 int get_index(uint32_t address) {
     // Extract index by shifting the address right by the number of block offset bits,
     // then apply a mask to extract the index bits.
-    return (address >> BLOCK_OFFSET_SIZE) & ((1 << INDEX_SIZE) - 1);  // Mask the index bits
+    return (address >> BLOCK_OFFSET_SIZE) & ((1 << INDEX_BIT_LENGTH) - 1);  // Mask the index bits
 }
 
 // Function to check if an address is in the cache and return valid bits if the tag is found
@@ -118,5 +118,5 @@ void update_state(uint32_t address, Cache* cache, uint32_t state)
 
 int get_first_address_in_block(Cache* cache, int index)
 {
-    return ((cache->tsram[index].tag * DSRAM_SIZE) + index * BLOCK_SIZE);
+    return ((cache->tsram[index].tag * DATA_CACHE_WORD_DEPTH) + index * DATA_CACHE_BLOCK_DEPTH);
 }
