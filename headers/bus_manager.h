@@ -19,10 +19,9 @@ typedef struct busManager {
     FlipFlop_BusCmd bus_cmd;                            // Command being executed on the bus
     FlipFlop_uint32_t bus_data;                         // Data being transferred on the bus.
     FlipFlop_uint32_t bus_line_addr;                    // the address that will go on the bus lines
-    int32_t core_turn;                                  // Core that has the current turn
+    FlipFlop_int32_t core_turn;                         // Core that has the current turn
     BusRequestor* requestors[NUM_OF_CORES];             // Fixed array of BusRequestors
     BusRequestor* enlisted_requestors[NUM_OF_CORES];    // List of enlisted BusRequestors
-    struct core* cores[NUM_OF_CORES];                   // fixed array of caches
     MainMemory* main_memory;                            // pointer to the main memory
 
     uint64_t* p_cycle;

@@ -90,12 +90,6 @@ void advance_core(Core* core,
         UPDATE_FLIP_FLOP(core->registers[i], true);
     }
 
-    // Update snooper
-    UPDATE_FLIP_FLOP(core->snooper.busSnooperActive, true);
-
-    // Update requestor
-    UPDATE_FLIP_FLOP(core->requestor.is_request_on_bus, true);
-
     // Update cache
     for (int i = 0; i < DATA_CACHE_WORD_DEPTH; i++)
     {

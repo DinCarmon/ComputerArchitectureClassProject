@@ -11,23 +11,12 @@ struct core;
 typedef struct {
     BusCmd operation;                           // Operation type (e.g., read, write, invalidate)
     uint32_t address;                           // Address associated with the bus request
-    int start_cycle;                            // Cycle when the request started
-    FlipFlop_bool is_request_on_bus;            // is the request granted
-    bool busRequestInTransaction_now;           // True if a bus request was already sent, waiting to end
     int priority;                               // Priority of the bus requestor
     
     struct core* myCore;
 } BusRequestor;
+
 // Function to create and initialize a BusRequestor
 void configure_bus_requestor(BusRequestor* bus_requestor, struct core* myCore);
-
-// Function to check if the request is over, if it is resest the requestor
-bool BusRequestOver(BusRequestor* requestor);
-
-// Function to check if the BusRequestor is already occupied
-bool BusRequestorAlreadyOccupied(const BusRequestor* requestor);
-
-// Function to reset the BusRequestor to its initial state
-void bus_requestor_reset(BusRequestor* requestor);
 
 #endif

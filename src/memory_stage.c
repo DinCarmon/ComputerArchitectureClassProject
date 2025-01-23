@@ -33,8 +33,9 @@ bool handleCacheHit(MemoryStage* self)
     // Therefore, we need to send a BusRdX command before we can move on
 
 	// checks if the wished busRdx transaction is on the bus right now.
-    if (self->state.myCore->requestor.is_request_on_bus.now &&
-        self->num_of_cycles_on_same_command > 0)
+    if (self->state.myCore->bus_manager->bus_cmd.now == BUS_RDX_CMD &&
+        self->state.myCore->bus_manager->bus_origid.now == self->state.myCore->id &&
+        self->state.myCore->bus_manager->bus_line_addr.now == self->state.inputState.aluOperationOutput)
     {
         write_cache(self->state.inputState.aluOperationOutput,
                     &(self->state.myCore->cache_updated),
@@ -58,9 +59,21 @@ bool handleCacheHit(MemoryStage* self)
 
 bool handleCacheMiss(MemoryStage* self)
 {
-    // If we already sent the request, there is nothing to do, but wait for it to end.
-	if (self->state.myCore->requestor.is_request_on_bus.now)
-	{
+    // If there is a transaction in progress on the bus in the next cycle,
+    // Than it means that either our transaction not yet finished.
+    // or that we cant send our request now.
+    if (is_open_for_start_of_new_enlisting(self->state.myCore->bus_manager) == false)
+    {
+        self->num_of_cycles_on_same_command++;
+		return true;
+    }
+
+    // If we got here it means we can enlist to the bus, but there is an edge case in which
+    // the current transaction is already on the bus.
+    // We check if this is the case:
+    if (self->state.myCore->bus_manager->core_turn.now == self->state.myCore->id &&
+        self->state.myCore->requestor.address == self->state.inputState.aluOperationOutput)
+    {
         self->num_of_cycles_on_same_command++;
 		return true;
 	}

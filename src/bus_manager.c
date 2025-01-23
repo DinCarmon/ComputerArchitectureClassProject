@@ -20,7 +20,8 @@ void configure_bus_manager(BusManager* manager, struct core** cores, MainMemory*
     manager->bus_line_addr.updated = 0;
     manager->bus_data.now = 0;
     manager->bus_data.updated = 0;
-    manager->core_turn = -1;
+    manager->core_turn.now = -1;
+    manager->core_turn.now = -1;
     manager->interuptor_id = -1;
     manager->main_memory = main_memory;
 
@@ -32,11 +33,6 @@ void configure_bus_manager(BusManager* manager, struct core** cores, MainMemory*
     // Assign the provided requestors
     for (int i = 0; i < NUM_OF_CORES; ++i) {
         manager->requestors[i] = &(cores[i]->requestor);
-    }
-
-    // Assign the provided cores
-    for (int i = 0; i < NUM_OF_CORES; ++i) {
-        manager->cores[i] = cores[i];
     }
 }
 
@@ -110,13 +106,14 @@ void finish_bus_enlisting(BusManager* manager)
         }
     }
 
-    manager->core_turn = coreWithMinPriority;
+    manager->core_turn.updated = coreWithMinPriority;
     arrange_priorities(manager);
 
     // Reset the enlisted requestors array
     reset_enlisted_requestors(manager);
 }
 
+// Must occur after bus enlisting and finish enlisting
 void write_next_cycle_of_bus(BusManager* manager)
 {
     if (!manager)
@@ -127,11 +124,11 @@ void write_next_cycle_of_bus(BusManager* manager)
 
     // First check if we are on the verge of a new transaction.
     // If so update accordingly
-    if (manager->core_turn != -1 &&
+    if (manager->core_turn.updated != -1 &&
         is_open_for_start_of_new_enlisting(manager))
     {
         // Let the bus requestor enter the bus
-        write_bus_lines_from_requestor(manager, manager->requestors[manager->core_turn]);
+        write_bus_lines_from_requestor(manager, manager->requestors[manager->core_turn.updated]);
 
         // Transition of the state to the current bus command
         if (manager->bus_cmd.updated == BUS_RD_CMD)
@@ -146,9 +143,6 @@ void write_next_cycle_of_bus(BusManager* manager)
             fprintf(stderr, "Enlisting without any request is not possible.\n");
             exit(EXIT_FAILURE);
         }
-
-        // Update the bus requestor that his request is on the bus now
-        manager->requestors[manager->core_turn]->is_request_on_bus.updated = true;
     }
 
     switch (manager->bus_status.now)
@@ -188,7 +182,7 @@ void write_next_cycle_of_bus(BusManager* manager)
                 manager->bus_status.updated = BUS_FLUSH;
                 manager->bus_origid.updated = MAIN_MEMORY_BUS_ORIGIN;
                 manager->bus_cmd.updated = FLUSH_CMD;
-                uint32_t addr_requested = manager->requestors[manager->core_turn]->address;
+                uint32_t addr_requested = manager->requestors[manager->core_turn.now]->address;
                 uint32_t first_addr_answered = addr_requested - get_block_offset(addr_requested);
                 manager->bus_line_addr.updated = first_addr_answered;
                 manager->bus_data.updated = manager->main_memory->memory[first_addr_answered];
@@ -225,8 +219,11 @@ void write_next_cycle_of_bus(BusManager* manager)
             }
             else
             {
+                manager->interuptor_id = -1;
+                manager->interrupted_by_another_snooper = false;
+
                 // Do we need to go to bus free state
-                if (manager->core_turn == -1)
+                if (manager->core_turn.updated == -1)
                 {
                     manager->bus_status.updated = BUS_FREE;
                     manager->bus_cmd.updated = NO_CMD;
@@ -245,17 +242,17 @@ void write_next_cycle_of_bus(BusManager* manager)
             if (manager->bus_origid.now == MAIN_MEMORY_BUS_ORIGIN) // If it is the main memory who is flushing
             {
                 // So we need to update the originator core who asked for the memory
-                manager->requestors[manager->core_turn]->myCore->cache_updated.dsram[manager->bus_line_addr.now] = manager->bus_data.now;
-                manager->requestors[manager->core_turn]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].tag = get_tag(manager->bus_line_addr.now);
+                manager->requestors[manager->core_turn.now]->myCore->cache_updated.dsram[manager->bus_line_addr.now] = manager->bus_data.now;
+                manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].tag = get_tag(manager->bus_line_addr.now);
                 if (is_last_flush) // Only than update the status of the block
                 {
-                    if (manager->bus_shared.now == BLOCK_NOT_SHARED && manager->requestors[manager->core_turn]->operation == BUS_RDX_CMD)
-                        manager->requestors[manager->core_turn]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = MODIFIED;
-                    else if (manager->bus_shared.now == BLOCK_NOT_SHARED && manager->requestors[manager->core_turn]->operation == BUS_RD_CMD)
-                        manager->requestors[manager->core_turn]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = EXCLUSIVE;
-                    else if (manager->bus_shared.now == BLOCK_SHARED && manager->requestors[manager->core_turn]->operation == BUS_RD_CMD)
-                        manager->requestors[manager->core_turn]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = SHARED;
-                    else if (manager->bus_shared.now == BLOCK_SHARED && manager->requestors[manager->core_turn]->operation == BUS_RDX_CMD)
+                    if (manager->bus_shared.now == BLOCK_NOT_SHARED && manager->requestors[manager->core_turn.now]->operation == BUS_RDX_CMD)
+                        manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = MODIFIED;
+                    else if (manager->bus_shared.now == BLOCK_NOT_SHARED && manager->requestors[manager->core_turn.now]->operation == BUS_RD_CMD)
+                        manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = EXCLUSIVE;
+                    else if (manager->bus_shared.now == BLOCK_SHARED && manager->requestors[manager->core_turn.now]->operation == BUS_RD_CMD)
+                        manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = SHARED;
+                    else if (manager->bus_shared.now == BLOCK_SHARED && manager->requestors[manager->core_turn.now]->operation == BUS_RDX_CMD)
                     {
                         // It doesnt make sense, that someone shall answer with a block shared to a busRdX command
                         fprintf(stderr, "It doesnt make sense, that someone shall answer with a block shared to a busRdX command.\n");
@@ -285,8 +282,11 @@ void write_next_cycle_of_bus(BusManager* manager)
             }
             else
             {
+                manager->interuptor_id = -1;
+                manager->interrupted_by_another_snooper = false;
+
                 // Do we need to go to bus free state
-                if (manager->core_turn == -1)
+                if (manager->core_turn.updated == -1)
                 {
                     manager->bus_status.updated = BUS_FREE;
                     manager->bus_cmd.updated = NO_CMD;
@@ -302,17 +302,17 @@ void write_next_cycle_of_bus(BusManager* manager)
             }
 
             // So we need to update the originator core who asked for the memory
-            manager->requestors[manager->core_turn]->myCore->cache_updated.dsram[manager->bus_line_addr.now] = manager->bus_data.now;
-            manager->requestors[manager->core_turn]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].tag = get_tag(manager->bus_line_addr.now);
+            manager->requestors[manager->core_turn.now]->myCore->cache_updated.dsram[manager->bus_line_addr.now] = manager->bus_data.now;
+            manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].tag = get_tag(manager->bus_line_addr.now);
             if (is_last_flush) // Only than update the status of the block
             {
-                if (manager->bus_shared.now == BLOCK_NOT_SHARED && manager->requestors[manager->core_turn]->operation == BUS_RDX_CMD)
-                    manager->requestors[manager->core_turn]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = MODIFIED;
-                else if (manager->bus_shared.now == BLOCK_NOT_SHARED && manager->requestors[manager->core_turn]->operation == BUS_RD_CMD)
-                    manager->requestors[manager->core_turn]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = EXCLUSIVE;
-                else if (manager->bus_shared.now == BLOCK_SHARED && manager->requestors[manager->core_turn]->operation == BUS_RD_CMD)
-                    manager->requestors[manager->core_turn]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = SHARED;
-                else if (manager->bus_shared.now == BLOCK_SHARED && manager->requestors[manager->core_turn]->operation == BUS_RDX_CMD)
+                if (manager->bus_shared.now == BLOCK_NOT_SHARED && manager->requestors[manager->core_turn.now]->operation == BUS_RDX_CMD)
+                    manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = MODIFIED;
+                else if (manager->bus_shared.now == BLOCK_NOT_SHARED && manager->requestors[manager->core_turn.now]->operation == BUS_RD_CMD)
+                    manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = EXCLUSIVE;
+                else if (manager->bus_shared.now == BLOCK_SHARED && manager->requestors[manager->core_turn.now]->operation == BUS_RD_CMD)
+                    manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = SHARED;
+                else if (manager->bus_shared.now == BLOCK_SHARED && manager->requestors[manager->core_turn.now]->operation == BUS_RDX_CMD)
                 {
                     // It doesnt make sense, that someone shall answer with a block shared to a busRdX command
                     fprintf(stderr, "It doesnt make sense, that someone shall answer with a block shared to a busRdX command.\n");
@@ -376,4 +376,9 @@ void advance_bus_to_next_cycle(BusManager* manager)
     UPDATE_FLIP_FLOP(manager->bus_origid, false);
     UPDATE_FLIP_FLOP(manager->bus_line_addr, false);
     UPDATE_FLIP_FLOP(manager->bus_data, false);
+
+    // The core turn stays the same.
+    // it is changed only in finish_bus_enlisting.
+    // which occurs only when there is a possibility to enter the bus in the next cycle
+    UPDATE_FLIP_FLOP(manager->core_turn, true); 
 }

@@ -7,10 +7,6 @@
 // Function to create and initialize a BusSnooper on the heap
 void configure_bus_snooper(BusSnooper* snooper, struct core* myCore)
 {
-    snooper->busSnooperActive.now = false;
-    snooper->busSnooperActive.updated = false;
-    snooper->addr_to_flush = 0;
-    snooper->start_flush_cycle = 0;
     snooper->myCore = myCore;
 }
 

@@ -9,9 +9,6 @@ struct core;
 
 // BusSnooper structure definition
 typedef struct {
-    FlipFlop_bool busSnooperActive;  // Indicates if the BusSnooper is active in the current
-    uint32_t addr_to_flush;     // Address to flush
-    int start_flush_cycle;          // Cycle when the flush started
 
     struct core* myCore;
 } BusSnooper;
@@ -19,7 +16,9 @@ typedef struct {
 // Function to initialize a BusSnooper on the heap
 void configure_bus_snooper(BusSnooper* snooper, struct core* myCore);
 
-// Function for the BusSnooper to snoop and react to bus commands
+// Function for the BusSnooper to snoop and react to bus commands.
+// The function only triggered if it sees something related to it on the bus.
+// After that, it interrupts the bus. It is the bus job to write following flushes from the interuptor cache.
 void do_snoop_operation(BusSnooper* snooper);
 
 #endif
