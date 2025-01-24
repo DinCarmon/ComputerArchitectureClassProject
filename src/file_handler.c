@@ -287,7 +287,8 @@ void write_core_trace_line(FILE* coreTraceFile,
     fprintf(coreTraceFile, "%s", cycleStr);
     fprintf(coreTraceFile, " ");
 
-    // The first if is for a weird edge case print style which can be seen at the given test example at core trace for core 0.
+    // The first if is for a weird edge case print style
+    // which can be seen at the given test example at core trace for core 0.
     if (core->decode_stage.state.outputState.instruction.opcode == Halt &&
         last_succesful_decode_execution == *(core->p_cycle))
         writeInstructionAddressToFile(coreTraceFile,
