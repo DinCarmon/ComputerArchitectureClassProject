@@ -98,8 +98,12 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
             // Ensure every stage happends when it is not stalled, and it has some input.
             // This is crucial for correct statistics on core.
 
+            if (cycle == 5)
+                printf("hi");
+
             if (cycle >= 5 &&
                 last_succesful_memory_execution[i] >= last_succesful_writeback_execution[i] &&
+                last_succesful_memory_execution[i] != -1 &&
                 cores[i].writeback_stage.state.outputState.instruction.opcode != Halt)
             {
                 do_write_back_operation(&(cores[i].writeback_stage));

@@ -208,7 +208,7 @@ void write_next_cycle_of_bus(BusManager* manager)
         case BUS_FLUSH:  // Happends if a core wishes to dump something / if memory answers
         {
             bool is_last_flush = false;
-            if (manager->bus_line_addr.now - get_block_offset(manager->bus_line_addr.now) == DATA_CACHE_BLOCK_DEPTH - 1)
+            if (get_block_offset(manager->bus_line_addr.now) == DATA_CACHE_BLOCK_DEPTH - 1)
                 is_last_flush = true;
 
             if (!is_last_flush) // Continue in the flush operation
@@ -274,7 +274,7 @@ void write_next_cycle_of_bus(BusManager* manager)
         case BUS_CACHE_INTERRUPTED:
         {
             bool is_last_flush = false;
-            if (manager->bus_line_addr.now - get_block_offset(manager->bus_line_addr.now) == DATA_CACHE_BLOCK_DEPTH - 1)
+            if (get_block_offset(manager->bus_line_addr.now) == DATA_CACHE_BLOCK_DEPTH - 1)
                 is_last_flush = true;
 
             if (!is_last_flush) // Continue in the flush operation

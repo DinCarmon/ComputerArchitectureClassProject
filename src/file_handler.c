@@ -315,12 +315,13 @@ void write_core_trace_line(FILE* coreTraceFile,
                                       core->decode_stage.state.inputState.instructionAddress);
     fprintf(coreTraceFile, " ");
 
-    if ((last_succesful_execute_execution != *(core->p_cycle)) ||
-        *(core->p_cycle) <= 2)
-        fprintf(coreTraceFile, "---");
-    else
+    if (*(core->p_cycle) >= 3 &&
+        (last_succesful_execute_execution == *(core->p_cycle) ||
+         (last_insuccesful_memory_execution == *(core->p_cycle))))
         writeInstructionAddressToFile(coreTraceFile,
                                       core->execute_stage.state.inputState.instructionAddress);
+    else
+        fprintf(coreTraceFile, "---"); 
     fprintf(coreTraceFile, " ");
 
     // If memory was not executed in this cycle or
@@ -335,6 +336,9 @@ void write_core_trace_line(FILE* coreTraceFile,
         writeInstructionAddressToFile(coreTraceFile,
                                       core->memory_stage.state.inputState.instructionAddress);
     fprintf(coreTraceFile, " ");
+
+    if (*core->p_cycle == 5)
+        printf("hi");
 
     if (last_succesful_writeback_execution != *(core->p_cycle) ||
         *(core->p_cycle) <= 4)
@@ -361,7 +365,7 @@ void write_bus_trace_line(FILE* bus_trace_file,
 {
     // Write cycle
     char cycleStr[MAX_PATH_SIZE] = "";
-    snprintf(cycleStr, sizeof(cycleStr), "%d", (int)*(manager->p_cycle));
+    snprintf(cycleStr, sizeof(cycleStr), "%d", (int)*(manager->p_cycle) - 1); // Why -1? Because according to the example we should start counting at 1, and this is the easiest fixup to not break everything.
     fprintf(bus_trace_file, "%s", cycleStr);
     fprintf(bus_trace_file, " ");
 
