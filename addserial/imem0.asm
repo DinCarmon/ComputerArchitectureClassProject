@@ -1,7 +1,8 @@
 add $r2, $imm, $zero, 1    
-sla $r2, $r2, $imm, 12      # $r2 = 4096. The offset of the second array
+sll $r2, $r2, $imm, 12      # $r2 = 4096. The offset of the second array
 add $r3, $zero, $zero, 0       # $r3 = 0. $r3 shall hold the block offset in memory we calculate the sum for.
-a: lw $r4, $r3, $imm, 0     # $r4 shall be used to copy the first word in the block
+a:
+lw $r4, $r3, $imm, 0     # $r4 shall be used to copy the first word in the block
 lw $r5, $r3, $imm, 1        # $r5 shall be used to copy the second word in the block
 lw $r6, $r3, $imm, 2        # $r6 shall be used to copy the third word in the block
 lw $r7, $r3, $imm, 3        # $r7 shall be used to copy the fourth word in the block

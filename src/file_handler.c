@@ -133,7 +133,7 @@ void get_all_file_descriptors(int argc,
                            FILE* status_cache_files[NUM_OF_CORES],
                            FILE* stats_files[NUM_OF_CORES])
 {
-    if (argc == 2)
+    if (argc < 2)
     {
         *main_memory_input_file = openFile(DEFAULT_MAIN_MEMORY_FILE_INPUT_PATH, "r");
         *main_memory_output_file = openFile(DEFAULT_MAIN_MEMORY_FILE_OUTPUT_PATH, "w");
