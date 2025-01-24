@@ -248,7 +248,15 @@ void write_next_cycle_of_bus(BusManager* manager)
             if (manager->bus_origid.now == MAIN_MEMORY_BUS_ORIGIN) // If it is the main memory who is flushing
             {
                 // So we need to update the originator core who asked for the memory
-                manager->requestors[manager->core_turn.now]->myCore->cache_updated.dsram[manager->bus_line_addr.now] = manager->bus_data.now;
+                if (manager->requestors[manager->core_turn.now]->operation == BUS_RDX_CMD &&
+                    manager->bus_line_addr.now == manager->requestors[manager->core_turn.now]->address)
+                {
+                    // Do nothing. The core wishes to write to this address, and not to be updated by the bus.
+                }
+                else
+                {
+                    manager->requestors[manager->core_turn.now]->myCore->cache_updated.dsram[manager->bus_line_addr.now] = manager->bus_data.now;
+                }
                 manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].tag = get_tag(manager->bus_line_addr.now);
                 if (is_last_flush) // Only than update the status of the block
                 {
@@ -308,8 +316,17 @@ void write_next_cycle_of_bus(BusManager* manager)
             }
 
             // So we need to update the originator core who asked for the memory
-            manager->requestors[manager->core_turn.now]->myCore->cache_updated.dsram[manager->bus_line_addr.now] = manager->bus_data.now;
+            if (manager->requestors[manager->core_turn.now]->operation == BUS_RDX_CMD &&
+                manager->bus_line_addr.now == manager->requestors[manager->core_turn.now]->address)
+            {
+                // Do nothing. The core wishes to write to this address, and not to be updated by the bus.
+            }
+            else
+            {
+                manager->requestors[manager->core_turn.now]->myCore->cache_updated.dsram[manager->bus_line_addr.now] = manager->bus_data.now;
+            }
             manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].tag = get_tag(manager->bus_line_addr.now);
+            
             if (is_last_flush) // Only than update the status of the block
             {
                 if (manager->bus_shared.now == BLOCK_NOT_SHARED && manager->requestors[manager->core_turn.now]->operation == BUS_RDX_CMD)

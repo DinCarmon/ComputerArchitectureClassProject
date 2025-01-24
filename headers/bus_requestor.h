@@ -11,6 +11,7 @@ struct core;
 typedef struct {
     BusCmd operation;                           // Operation type (e.g., read, write, invalidate)
     uint32_t address;                           // Address associated with the bus request
+    uint32_t data;                              // If it is a BusRdX command it shall hold the data it wants to write
     int priority;                               // Priority of the bus requestor
     
     struct core* myCore;

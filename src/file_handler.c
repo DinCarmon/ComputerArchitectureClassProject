@@ -363,6 +363,9 @@ void write_core_trace_line(FILE* coreTraceFile,
 void write_bus_trace_line(FILE* bus_trace_file,
                           BusManager* manager)
 {
+    if (manager->bus_cmd.now == 0) // Do not print cycles where the bus is empty
+        return;
+
     // Write cycle
     char cycleStr[MAX_PATH_SIZE] = "";
     snprintf(cycleStr, sizeof(cycleStr), "%d", (int)*(manager->p_cycle) - 1); // Why -1? Because according to the example we should start counting at 1, and this is the easiest fixup to not break everything.
