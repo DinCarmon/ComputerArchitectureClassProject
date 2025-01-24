@@ -20,12 +20,16 @@ void do_snoop_operation(BusSnooper* snooper)
     {
         uint32_t address = snooper->myCore->bus_manager->bus_line_addr.now;
         int state = get_state(address, &(snooper->myCore->cache_now));
+        if (*snooper->myCore->p_cycle == 1605 && snooper->myCore->id == 2)
+            printf("hi");
+
         if (in_cache(address, &(snooper->myCore->cache_now)))
         {
+            interrupt_bus(snooper->myCore->bus_manager, snooper->myCore->id);
+
             // If the cache line is MODIFIED and the command is BUS_RD
             if (state == MODIFIED && snooper->myCore->bus_manager->bus_cmd.now == BUS_RD_CMD)
             {
-                interrupt_bus(snooper->myCore->bus_manager, snooper->myCore->id);
                 update_state(address,
                              &(snooper->myCore->cache_updated),
                              SHARED);
@@ -36,7 +40,6 @@ void do_snoop_operation(BusSnooper* snooper)
             // If the cache line is modified and the command is bus rdx, interupt bus, and change state to invalid
             if (state == MODIFIED && snooper->myCore->bus_manager->bus_cmd.now == BUS_RDX_CMD)
             {
-                interrupt_bus(snooper->myCore->bus_manager, snooper->myCore->id);
                 update_state(address,
                              &(snooper->myCore->cache_updated),
                              INVALID);

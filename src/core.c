@@ -62,8 +62,16 @@ void advance_core(Core* core,
         reset_pipeline_object(&(core->fetch_stage.state.inputState));
     if (last_succesful_decode_execution == (int64_t)*(core->p_cycle))
         reset_pipeline_object(&(core->decode_stage.state.inputState));
+    if (core->id == 2 && *(core->p_cycle) == 45)
+            printf("hi");
+    
     if (last_succesful_execute_execution == (int64_t)*(core->p_cycle))
+    {
+        if (core->id == 2)
+            printf("hi");
+        
         reset_pipeline_object(&(core->execute_stage.state.inputState));
+    }
     if (last_succesful_memory_execution == (int64_t)*(core->p_cycle))
         reset_pipeline_object(&(core->memory_stage.state.inputState));
     if (last_succesful_writeback_execution == (int64_t)*(core->p_cycle))
@@ -74,17 +82,22 @@ void advance_core(Core* core,
          last_insuccesful_decode_execution != (int64_t)*(core->p_cycle)) ||
         (last_succesful_decode_execution == (int64_t)*(core->p_cycle)))
         core->decode_stage.state.inputState = core->fetch_stage.state.outputState;
-        
     if ((last_succesful_decode_execution == (int64_t)*(core->p_cycle)) ||
-        (last_insuccesful_decode_execution == (int64_t)*(core->p_cycle) &&
+        (last_insuccesful_decode_execution != (int64_t)*(core->p_cycle) &&
          last_succesful_execute_execution == (int64_t)*(core->p_cycle) ))
+    {
+        if (core->id == 2)
+            printf("hi");
+
         core->execute_stage.state.inputState = core->decode_stage.state.outputState;
+    }
     if ((last_succesful_execute_execution == (int64_t)*(core->p_cycle) &&
          last_insuccesful_memory_execution != (int64_t)*(core->p_cycle)) ||
-        (last_succesful_memory_execution == (int64_t)*(core->p_cycle)))
+        (last_succesful_memory_execution == (int64_t)*(core->p_cycle) &&
+         ))
         core->memory_stage.state.inputState = core->execute_stage.state.outputState;
     if ((last_succesful_memory_execution == (int64_t)*(core->p_cycle)) ||
-        (last_insuccesful_memory_execution == (int64_t)*(core->p_cycle) &&
+        (last_insuccesful_memory_execution != (int64_t)*(core->p_cycle) &&
          last_succesful_writeback_execution == (int64_t)*(core->p_cycle) ))
         core->writeback_stage.state.inputState = core->memory_stage.state.outputState;
 

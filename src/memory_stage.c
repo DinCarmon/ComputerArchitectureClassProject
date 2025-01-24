@@ -62,9 +62,10 @@ bool handleCacheMiss(MemoryStage* self)
 {
     // If now it is the end of our transaction. we can look at the bus right now and move on
     // at this cycle
-    if (get_block_offset(self->state.myCore->bus_manager->bus_line_addr.now) == DATA_CACHE_BLOCK_DEPTH -1 &&
+    if (get_block_offset(self->state.myCore->bus_manager->bus_line_addr.now) == DATA_CACHE_BLOCK_DEPTH - 1 &&
         get_index(self->state.myCore->bus_manager->bus_line_addr.now) == get_index(self->state.inputState.aluOperationOutput) &&
-        self->state.myCore->bus_manager->core_turn.now == self->state.myCore->id)
+        self->state.myCore->bus_manager->core_turn.now == self->state.myCore->id &&
+        self->state.myCore->bus_manager->bus_cmd.now == FLUSH_CMD)
     {
         if (self->state.inputState.instruction.opcode == Sw)
         {
@@ -72,6 +73,9 @@ bool handleCacheMiss(MemoryStage* self)
                         &(self->state.myCore->cache_updated),
                         self->state.inputState.rdValue);
         }
+
+        if (*self->state.myCore->p_cycle == 1609)
+            printf("hi");
 
         self->num_of_cycles_on_same_command = 0;
         return false;
@@ -149,6 +153,12 @@ bool handleCacheMiss(MemoryStage* self)
 
 bool do_memory_operation(MemoryStage* self)
 {
+    if (self->state.myCore->id == 2)
+        printf("memory: %d cycle: %d\n", self->state.inputState.instructionAddress, (int)*(self->state.myCore->p_cycle));
+
+    if (self->state.myCore->id == 2 && *self->state.myCore->p_cycle == 45)
+        printf("hi");
+
     // First copy the output state from the input state.
     // Later update the output state with operation needed to be
     // done at this round

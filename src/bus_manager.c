@@ -141,6 +141,9 @@ void write_next_cycle_of_bus(BusManager* manager)
         }
     }
 
+    if (*manager->p_cycle == 5)
+        printf("hi");
+
     switch (manager->bus_status.now)
     {
         case BUS_FREE:
@@ -166,6 +169,9 @@ void write_next_cycle_of_bus(BusManager* manager)
             manager->bus_line_addr.updated = 0;
             manager->bus_data.updated = 0;
             manager->bus_origid.updated = 0;
+
+            if (*manager->p_cycle == 1605)
+                printf("hi");
 
             // Check if another cache wishes to answer, and answered in the snooping on this cycle.
             if (manager->interrupted_by_another_snooper)

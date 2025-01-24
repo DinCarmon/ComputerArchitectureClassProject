@@ -63,7 +63,7 @@ uint32_t hexStringToUint32(char* string)
 
 bool readNumFromFileInHex(FILE* file, uint32_t* num)
 {
-    char line[11]; // 8 hex digits + /r + /n + null ending
+    char line[20]; // 8 hex digits + /r + /n + null ending
     bool isNotEndOfFile = fgets(line, sizeof(line) - 1, file);
     line[8] = '\0'; // Get rid of /r/n
 
@@ -141,9 +141,6 @@ void get_all_file_descriptors(int argc,
         for (int i = 0; i < NUM_OF_CORES; i++)
         {
             char coreNumStr[MAX_PATH_SIZE] = "";
-
-
-            
             snprintf(coreNumStr, sizeof(coreNumStr), "%d", i);
 
             char instructionMemoryFilePath[MAX_PATH_SIZE] = "";

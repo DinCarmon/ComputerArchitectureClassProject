@@ -76,6 +76,9 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
 
     while(true)
     {
+        if (cycle == 2000)
+            printf("hi");
+
         // 1. Check ending condition for simulation
         bool end_simulation = true;
         for (int i = 0; i < NUM_OF_CORES; i++)
@@ -94,12 +97,11 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
         // 2. Do operations of each core
         for(int i = 0; i < NUM_OF_CORES; i++)
         {
-
             // Ensure every stage happends when it is not stalled, and it has some input.
             // This is crucial for correct statistics on core.
-
-            if (cycle == 5)
+            if (cycle == 47 && i == 2)
                 printf("hi");
+            
 
             if (cycle >= 5 &&
                 last_succesful_memory_execution[i] >= last_succesful_writeback_execution[i] &&
@@ -112,8 +114,12 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
 
             if (cycle >= 4 &&
                 last_succesful_execute_execution[i] >= last_succesful_memory_execution[i] &&
+                last_succesful_execute_execution[i] != -1 &&
                 cores[i].memory_stage.state.outputState.instruction.opcode != Halt)
             {
+                if (cycle == 25 && i == 2)
+                    printf("hi");
+
                 bool memory_should_stall = do_memory_operation(&(cores[i].memory_stage));
                 if (!memory_should_stall)
                     last_succesful_memory_execution[i] = cycle;   
@@ -124,6 +130,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
             if (cycle >= 3 &&
                 last_insuccesful_memory_execution[i] != (int64_t)(cycle) &&
                 last_succesful_decode_execution[i] >= last_succesful_execute_execution[i] &&
+                last_succesful_decode_execution[i] != -1 &&
                 cores[i].execute_stage.state.outputState.instruction.opcode != Halt)
             {
                 do_execute_operation(&(cores[i].execute_stage));
@@ -133,6 +140,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
             if (cycle >= 2 &&
                 last_insuccesful_memory_execution[i] != (int64_t)(cycle) &&
                 last_succesful_fetch_execution[i] >= last_succesful_decode_execution[i] &&
+                last_succesful_fetch_execution[i] != -1 &&
                 cores[i].decode_stage.state.outputState.instruction.opcode != Halt)
             {
                 bool decode_should_stall = do_decode_operation(&(cores[i].decode_stage));
