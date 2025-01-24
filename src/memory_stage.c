@@ -73,9 +73,14 @@ bool handleCacheMiss(MemoryStage* self)
                         &(self->state.myCore->cache_updated),
                         self->state.inputState.rdValue);
         }
-
-        if (*self->state.myCore->p_cycle == 1609)
-            printf("hi");
+        else // a load command
+        {
+            if (get_block_offset(self->state.inputState.aluOperationOutput) == DATA_CACHE_BLOCK_DEPTH - 1) // If it is now on the bus
+                self->state.outputState.memoryRetrieved = self->state.myCore->bus_manager->bus_data.now;
+            else // If the required address was sent in one of the last 3 cycles, it is already in the cache
+                self->state.outputState.memoryRetrieved = self->state.myCore->cache_now.dsram[get_index(self->state.inputState.aluOperationOutput) * DATA_CACHE_BLOCK_DEPTH +
+                                                                                              get_block_offset(self->state.inputState.aluOperationOutput)];
+        }
 
         self->num_of_cycles_on_same_command = 0;
         return false;
@@ -153,12 +158,6 @@ bool handleCacheMiss(MemoryStage* self)
 
 bool do_memory_operation(MemoryStage* self)
 {
-    if (self->state.myCore->id == 2)
-        printf("memory: %d cycle: %d\n", self->state.inputState.instructionAddress, (int)*(self->state.myCore->p_cycle));
-
-    if (self->state.myCore->id == 2 && *self->state.myCore->p_cycle == 45)
-        printf("hi");
-
     // First copy the output state from the input state.
     // Later update the output state with operation needed to be
     // done at this round

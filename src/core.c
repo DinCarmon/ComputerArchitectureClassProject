@@ -58,9 +58,6 @@ void advance_core(Core* core,
                   int64_t last_insuccesful_memory_execution,
                   int64_t last_insuccesful_decode_execution)
 {
-    if (*core->p_cycle == 5 && core->id == 1)
-        printf("hi");
-
     bool can_pass_from_fetch_to_decode = core->decode_stage.state.inputState.is_ready == false &&
                                          core->fetch_stage.state.outputState.is_ready == true;
     bool can_pass_from_decode_to_execute = core->execute_stage.state.inputState.is_ready == false &&

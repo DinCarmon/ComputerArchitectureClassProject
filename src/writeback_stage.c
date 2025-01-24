@@ -29,9 +29,6 @@ void updateRegisterValues_writeback(WriteBackStage* self)
 
 bool do_write_back_operation(WriteBackStage* self)
 {
-    if (self->state.myCore->id == 2)
-        printf("writeback: %d cycle: %d\n", self->state.inputState.instructionAddress, (int)*(self->state.myCore->p_cycle));
-
     // First copy the output state from the input state.
     // Later update the output state with operation needed to be
     // done at this round

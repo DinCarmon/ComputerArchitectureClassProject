@@ -20,8 +20,6 @@ void do_snoop_operation(BusSnooper* snooper)
     {
         uint32_t address = snooper->myCore->bus_manager->bus_line_addr.now;
         int state = get_state(address, &(snooper->myCore->cache_now));
-        if (*snooper->myCore->p_cycle == 1605 && snooper->myCore->id == 2)
-            printf("hi");
 
         if (in_cache(address, &(snooper->myCore->cache_now)))
         {

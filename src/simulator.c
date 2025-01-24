@@ -85,9 +85,6 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
 
     while(true)
     {
-        if (cycle == 2000)
-            printf("hi");
-
         // 1. Check ending condition for simulation
         bool end_simulation = true;
         for (int i = 0; i < NUM_OF_CORES; i++)
@@ -124,10 +121,6 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
         {
             // Ensure every stage happends when it is not stalled, and it has some input.
             // This is crucial for correct statistics on core.
-            if (cycle == 2)
-                printf("hi");
-            
-
             if (cycle >= 5 &&
                 writeback_stage_is_empty[i] == false &&
                 cores[i].writeback_stage.state.outputState.instruction.opcode != Halt)

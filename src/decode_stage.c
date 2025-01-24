@@ -110,11 +110,6 @@ bool check_RAW_Hazard(Instruction instNow, Instruction unfinishedInst)
 
 bool isDataHazard(DecodeStage* self)
 {
-    if (*self->state.myCore->p_cycle >= 100 && self->state.myCore->id == 2)
-        printf("hi");
-    if (*self->state.myCore->p_cycle >= 47 && self->state.myCore->id == 2)
-        printf("hi");
-
     return  check_RAW_Hazard(self->state.inputState.instruction, self->state.myCore->execute_stage.state.inputState.instruction) ||
             check_RAW_Hazard(self->state.inputState.instruction, self->state.myCore->memory_stage.state.inputState.instruction) ||
             check_RAW_Hazard(self->state.inputState.instruction, self->state.myCore->writeback_stage.state.inputState.instruction); 
@@ -219,9 +214,6 @@ void doOperationsOfJumpInstructions(DecodeStage* self)
 
 bool do_decode_operation(DecodeStage* self)
 {
-    if (self->state.myCore->id == 2)
-        printf("decode: %d cycle: %d\n", self->state.inputState.instructionAddress, (int)*(self->state.myCore->p_cycle));
-
     // First copy the output state from the input state.
     // Later update the output state with operation needed to be
     // done at this round

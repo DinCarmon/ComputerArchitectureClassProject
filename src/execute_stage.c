@@ -111,9 +111,6 @@ void performALUOperation(ExecuteStage* self)
 
 bool do_execute_operation(ExecuteStage* self)
 {
-    if (self->state.myCore->id == 2)
-        printf("execute: %d cycle: %d\n", self->state.inputState.instructionAddress, (int)*(self->state.myCore->p_cycle));
-
     // First copy the output state from the input state.
     // Later update the output state with operation needed to be
     // done at this round
