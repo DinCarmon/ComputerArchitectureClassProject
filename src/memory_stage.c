@@ -109,14 +109,14 @@ bool handleCacheMiss(MemoryStage* self)
     // First, we need to find out what request we wish to send to the bus.
 
     // Do we need to flush first? Check if the block which is in the same index in cache needs is modified.
-    if (get_state(get_first_address_in_block(&(self->state.myCore->cache_now),
-                                             self->state.inputState.aluOperationOutput),
+    if (get_state(get_first_address_in_corresponding_block(&(self->state.myCore->cache_now),
+                                                           get_index(self->state.inputState.aluOperationOutput)),
                   &(self->state.myCore->cache_now)) == MODIFIED)
     {
         if (is_open_for_start_of_new_enlisting(self->state.myCore->bus_manager))
             enlist_to_bus(&(self->state.myCore->requestor), 
-                          get_first_address_in_block(&(self->state.myCore->cache_now),
-                                                     self->state.inputState.aluOperationOutput),
+                          get_first_address_in_corresponding_block(&(self->state.myCore->cache_now),
+                                                                   get_index(self->state.inputState.aluOperationOutput)),
                           FLUSH_CMD,
                           self->state.myCore->bus_manager);
         self->num_of_cycles_on_same_command++;

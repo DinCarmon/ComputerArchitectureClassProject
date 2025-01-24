@@ -73,7 +73,10 @@ void write_bus_lines_from_requestor(BusManager* manager, BusRequestor* requestor
     manager->bus_line_addr.updated = requestor->address;
     manager->bus_origid.updated = requestor->myCore->id;
     manager->bus_shared.updated = BLOCK_NOT_SHARED;
-    manager->bus_data.updated = 0;
+    if (requestor->operation != FLUSH_CMD)
+        manager->bus_data.updated = 0;
+    else
+        manager->bus_data.updated = requestor->myCore->cache_now.dsram[memory_address_to_cache_address(requestor->address - get_block_offset(requestor->address))];
 }
 
 // Function to assign the core with the lowest priority to core_turn
@@ -174,7 +177,7 @@ void write_next_cycle_of_bus(BusManager* manager)
                 manager->bus_cmd.updated = FLUSH_CMD;
                 uint32_t addr = manager->bus_line_addr.now - get_block_offset(manager->bus_line_addr.now); // Start answering from the start of the block
                 manager->bus_line_addr.updated = addr;
-                manager->bus_data.updated = manager->requestors[manager->interuptor_id]->myCore->cache_now.dsram[addr];
+                manager->bus_data.updated = manager->requestors[manager->interuptor_id]->myCore->cache_now.dsram[memory_address_to_cache_address(addr)];
                 manager->bus_origid.updated = manager->interuptor_id;
                 break;
             }
@@ -221,7 +224,7 @@ void write_next_cycle_of_bus(BusManager* manager)
                 if (manager->bus_origid.now == MAIN_MEMORY_BUS_ORIGIN) // If it is the main memory who is flushing
                     manager->bus_data.updated = manager->main_memory->memory[manager->bus_line_addr.now + 1];
                 else
-                    manager->bus_data.updated = manager->requestors[manager->bus_origid.now]->myCore->cache_now.dsram[manager->bus_line_addr.now + 1];
+                    manager->bus_data.updated = manager->requestors[manager->bus_origid.now]->myCore->cache_now.dsram[memory_address_to_cache_address(manager->bus_line_addr.now + 1)];
             }
             else
             {
@@ -255,7 +258,8 @@ void write_next_cycle_of_bus(BusManager* manager)
                 }
                 else
                 {
-                    manager->requestors[manager->core_turn.now]->myCore->cache_updated.dsram[manager->bus_line_addr.now] = manager->bus_data.now;
+                    manager->requestors[manager->core_turn.now]->myCore->cache_updated.dsram[get_index(manager->bus_line_addr.now) * DATA_CACHE_BLOCK_DEPTH +
+                                                                                             get_block_offset(manager->bus_line_addr.now)] = manager->bus_data.now;
                 }
                 manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].tag = get_tag(manager->bus_line_addr.now);
                 if (is_last_flush) // Only than update the status of the block
@@ -292,7 +296,7 @@ void write_next_cycle_of_bus(BusManager* manager)
                 manager->bus_line_addr.updated = manager->bus_line_addr.now + 1;
                 manager->bus_origid.updated = manager->bus_origid.now;
                 manager->bus_shared.updated = manager->bus_shared.now;
-                manager->bus_data.updated = manager->requestors[manager->bus_origid.now]->myCore->cache_now.dsram[manager->bus_line_addr.now + 1];
+                manager->bus_data.updated = manager->requestors[manager->bus_origid.now]->myCore->cache_now.dsram[memory_address_to_cache_address(manager->bus_line_addr.now + 1)];
             }
             else
             {
@@ -323,7 +327,7 @@ void write_next_cycle_of_bus(BusManager* manager)
             }
             else
             {
-                manager->requestors[manager->core_turn.now]->myCore->cache_updated.dsram[manager->bus_line_addr.now] = manager->bus_data.now;
+                manager->requestors[manager->core_turn.now]->myCore->cache_updated.dsram[memory_address_to_cache_address(manager->bus_line_addr.now)] = manager->bus_data.now;
             }
             manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].tag = get_tag(manager->bus_line_addr.now);
             

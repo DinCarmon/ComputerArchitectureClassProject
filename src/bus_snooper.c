@@ -19,10 +19,10 @@ void do_snoop_operation(BusSnooper* snooper)
         snooper->myCore->bus_manager->bus_origid.now != snooper->myCore->id)
     {
         uint32_t address = snooper->myCore->bus_manager->bus_line_addr.now;
-        int state = get_state(address, &(snooper->myCore->cache_now));
 
         if (in_cache(address, &(snooper->myCore->cache_now)))
         {
+            int state = get_state(address, &(snooper->myCore->cache_now));
             interrupt_bus(snooper->myCore->bus_manager, snooper->myCore->id);
 
             // If the cache line is MODIFIED and the command is BUS_RD

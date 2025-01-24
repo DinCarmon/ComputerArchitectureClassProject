@@ -18,6 +18,8 @@ typedef struct cache {
 
 // Function declarations
 
+uint32_t memory_address_to_cache_address(uint32_t address);
+
 // Function to  initialize a Cache instance
 void reset_cache(Cache* c);
 
@@ -44,6 +46,6 @@ int get_state(uint32_t address, Cache* cache);
 // Function to update state in cache
 void update_state(uint32_t address, Cache* cache, uint32_t state);
 
-int get_first_address_in_block(Cache* cache, int index);
+int get_first_address_in_corresponding_block(Cache* cache, int index);
 
 #endif

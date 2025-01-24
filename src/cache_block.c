@@ -60,6 +60,11 @@ int get_state(uint32_t address, Cache* cache) {
     return cache->tsram[index].state;  // Cache miss
 }
 
+uint32_t memory_address_to_cache_address(uint32_t address)
+{
+    return get_index(address) * DATA_CACHE_BLOCK_DEPTH + get_block_offset(address);
+}
+
 // Function to read data from the cache (entire row, not just byte-wise)
 uint32_t read_cache(uint32_t address, Cache* cache) {
     // First check if the address is in the cache
@@ -116,7 +121,7 @@ void update_state(uint32_t address, Cache* cache, uint32_t state)
     return;
 }
 
-int get_first_address_in_block(Cache* cache, int index)
+int get_first_address_in_corresponding_block(Cache* cache, int index)
 {
     return ((cache->tsram[index].tag * DATA_CACHE_WORD_DEPTH) + index * DATA_CACHE_BLOCK_DEPTH);
 }

@@ -6,9 +6,6 @@
 
 bool do_fetch_operation(FetchStage* self)
 {
-    if (self->state.myCore->id == 2)
-        printf("fetch: %d\n", self->state.inputState.instructionAddress);
-
     uint32_t instructionCodex = (self->state.myCore->instruction_memory[self->state.myCore->pc_register.now]);
     Instruction inst = create_instruction(instructionCodex);
 
