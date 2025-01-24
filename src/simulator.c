@@ -94,6 +94,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
         // 2. Do operations of each core
         for(int i = 0; i < NUM_OF_CORES; i++)
         {
+
             // Ensure every stage happends when it is not stalled, and it has some input.
             // This is crucial for correct statistics on core.
 
@@ -117,7 +118,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
             }
 
             if (cycle >= 3 &&
-                last_insuccesful_memory_execution[i] != (int64_t)(cycle - 1) &&
+                last_insuccesful_memory_execution[i] != (int64_t)(cycle) &&
                 last_succesful_decode_execution[i] >= last_succesful_execute_execution[i] &&
                 cores[i].execute_stage.state.outputState.instruction.opcode != Halt)
             {
@@ -126,7 +127,7 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
             }
 
             if (cycle >= 2 &&
-                last_insuccesful_memory_execution[i] != (int64_t)(cycle - 1) &&
+                last_insuccesful_memory_execution[i] != (int64_t)(cycle) &&
                 last_succesful_fetch_execution[i] >= last_succesful_decode_execution[i] &&
                 cores[i].decode_stage.state.outputState.instruction.opcode != Halt)
             {
@@ -138,13 +139,10 @@ void deploy_simulator(FILE* core_trace_files[NUM_OF_CORES],
             }
             
             if (cycle >= 1 &&
-                last_insuccesful_memory_execution[i] != (int64_t)(cycle - 1) &&
-                last_insuccesful_decode_execution[i] != (int64_t)(cycle - 1) &&
+                last_insuccesful_memory_execution[i] != (int64_t)(cycle) &&
+                last_insuccesful_decode_execution[i] != (int64_t)(cycle) &&
                 cores[i].fetch_stage.state.outputState.instruction.opcode != Halt)
             {
-                if (*cores[i].p_cycle == 3 && cores[i].id == 0)
-                    printf("hi");
-
                 do_fetch_operation(&(cores[i].fetch_stage));
                 last_succesful_fetch_execution[i] = cycle;
             }

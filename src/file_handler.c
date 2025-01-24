@@ -293,7 +293,8 @@ void write_core_trace_line(FILE* coreTraceFile,
         writeInstructionAddressToFile(coreTraceFile,
                                       core->pc_register.now + 1);
     // If fetch was not executed in this cycle print ---
-    else if (last_succesful_fetch_execution != *(core->p_cycle))
+    else if (last_succesful_fetch_execution != *(core->p_cycle) &&
+             last_insuccesful_decode_execution != *(core->p_cycle))
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
@@ -305,8 +306,7 @@ void write_core_trace_line(FILE* coreTraceFile,
     // Then print a ---
     if (((last_succesful_decode_execution != *(core->p_cycle)) &&
          (last_insuccesful_decode_execution != *(core->p_cycle))) ||
-        (last_succesful_fetch_execution != *(core->p_cycle) &&
-         core->fetch_stage.state.outputState.instruction.opcode != Halt) ||
+        (core->execute_stage.state.outputState.instruction.opcode == Halt) ||
         *(core->p_cycle) <= 1)
         fprintf(coreTraceFile, "---");
     else
@@ -327,8 +327,7 @@ void write_core_trace_line(FILE* coreTraceFile,
     // Then print a ---
     if (((last_succesful_memory_execution != *(core->p_cycle)) &&
          (last_insuccesful_memory_execution != *(core->p_cycle))) ||
-        (last_succesful_execute_execution != *(core->p_cycle) &&
-         core->execute_stage.state.outputState.instruction.opcode != Halt) ||
+        (core->writeback_stage.state.outputState.instruction.opcode == Halt) ||
         *(core->p_cycle) <= 3)
         fprintf(coreTraceFile, "---");
     else

@@ -224,9 +224,6 @@ bool do_decode_operation(DecodeStage* self)
 
     updateRegisterValues_decode(self);
 
-    if (*self->state.myCore->p_cycle == 2 && self->state.myCore->id == 0)
-        printf("hi");
-
     doOperationsOfJumpInstructions(self);
 
     return false;
