@@ -93,8 +93,7 @@ void advance_core(Core* core,
     }
     if ((last_succesful_execute_execution == (int64_t)*(core->p_cycle) &&
          last_insuccesful_memory_execution != (int64_t)*(core->p_cycle)) ||
-        (last_succesful_memory_execution == (int64_t)*(core->p_cycle) &&
-         ))
+        (last_succesful_memory_execution == (int64_t)*(core->p_cycle)))
         core->memory_stage.state.inputState = core->execute_stage.state.outputState;
     if ((last_succesful_memory_execution == (int64_t)*(core->p_cycle)) ||
         (last_insuccesful_memory_execution != (int64_t)*(core->p_cycle) &&
