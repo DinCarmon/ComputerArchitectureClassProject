@@ -22,9 +22,6 @@ bool handleCacheHit(MemoryStage* self)
         write_cache(self->state.inputState.aluOperationOutput,
                     &(self->state.myCore->cache_updated),
                     self->state.inputState.rdValue);
-		update_state(self->state.inputState.rdValue,
-			         &(self->state.myCore->cache_updated),
-			         MODIFIED);
         self->num_of_cycles_on_same_command = 0;
         return false;
     }
