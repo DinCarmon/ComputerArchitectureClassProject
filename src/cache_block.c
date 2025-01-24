@@ -17,10 +17,13 @@ void reset_cache(Cache* c) {
 }
 
 // Function to extract the tag from an address  
-int get_tag(uint32_t address) {
+int get_tag(uint32_t address)
+{
     // Shift the address right by the number of bits for index and block offset,
     // then mask to ensure only the tag bits are kept (12 bits for tag).
-    return (address >> (INDEX_BIT_LENGTH + BLOCK_OFFSET_SIZE)) & ((1 << TAG_FIELD_SIZE_IN_BITS) - 1);
+    int tag = (address >> (INDEX_BIT_LENGTH + BLOCK_OFFSET_SIZE)) & ((1 << TAG_FIELD_SIZE_IN_BITS) - 1);
+
+    return tag;
 }
 
 int get_block_offset(uint32_t address) {

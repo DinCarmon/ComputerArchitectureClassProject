@@ -214,6 +214,11 @@ void write_next_cycle_of_bus(BusManager* manager)
             if (get_block_offset(manager->bus_line_addr.now) == DATA_CACHE_BLOCK_DEPTH - 1)
                 is_last_flush = true;
 
+            if (is_last_flush && manager->bus_origid.now == manager->core_turn.now)
+            {
+                manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].state = INVALID;
+            }
+
             if (!is_last_flush) // Continue in the flush operation
             {
                 manager->bus_status.updated = BUS_FLUSH;
@@ -262,6 +267,7 @@ void write_next_cycle_of_bus(BusManager* manager)
                                                                                              get_block_offset(manager->bus_line_addr.now)] = manager->bus_data.now;
                 }
                 manager->requestors[manager->core_turn.now]->myCore->cache_updated.tsram[get_index(manager->bus_line_addr.now)].tag = get_tag(manager->bus_line_addr.now);
+                
                 if (is_last_flush) // Only than update the status of the block
                 {
                     if (manager->bus_shared.now == BLOCK_NOT_SHARED && manager->requestors[manager->core_turn.now]->operation == BUS_RDX_CMD)

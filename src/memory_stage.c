@@ -69,12 +69,16 @@ bool handleCacheMiss(MemoryStage* self)
     {
         if (self->state.inputState.instruction.opcode == Sw)
         {
+            if (self->num_of_cycles_on_same_command == 0)
+                self->state.myCore->num_write_hits++;
             write_cache(self->state.inputState.aluOperationOutput,
                         &(self->state.myCore->cache_updated),
                         self->state.inputState.rdValue);
         }
         else // a load command
         {
+            if (self->num_of_cycles_on_same_command == 0)
+                self->state.myCore->num_read_hits++;
             if (get_block_offset(self->state.inputState.aluOperationOutput) == DATA_CACHE_BLOCK_DEPTH - 1) // If it is now on the bus
                 self->state.outputState.memoryRetrieved = self->state.myCore->bus_manager->bus_data.now;
             else // If the required address was sent in one of the last 3 cycles, it is already in the cache
@@ -85,6 +89,11 @@ bool handleCacheMiss(MemoryStage* self)
         self->num_of_cycles_on_same_command = 0;
         return false;
     }
+
+    if (self->num_of_cycles_on_same_command == 0 && self->state.inputState.instruction.opcode == Lw)
+        self->state.myCore->num_read_miss++;
+    if (self->num_of_cycles_on_same_command == 0 && self->state.inputState.instruction.opcode == Sw)
+        self->state.myCore->num_write_miss++;
 
     // If there is a transaction in progress on the bus in the next cycle,
     // Than it means that either our transaction not yet finished.
@@ -198,11 +207,6 @@ bool do_memory_operation(MemoryStage* self)
     else
     {
         // If this is the first time we try to run the command
-        if (self->num_of_cycles_on_same_command == 0 && self->state.inputState.instruction.opcode == Lw)
-            self->state.myCore->num_read_miss++;
-        if (self->num_of_cycles_on_same_command == 0 && self->state.inputState.instruction.opcode == Sw)
-            self->state.myCore->num_write_miss++;
-
         bool ret = handleCacheMiss(self);
         if (ret == false)
         {
