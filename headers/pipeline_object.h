@@ -2,6 +2,7 @@
 #define PIPELINE_OBJECT_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "instruction.h"
 
 /**
@@ -10,14 +11,17 @@
  * Not all parameters shall have a meaning.
  * For example, alu operations shall have no use of the memoryRetrieved field.
  */
-typedef struct pipelineObjectState {
+typedef struct pipelineObjectState
+{
     uint32_t instructionAddress;        // Original address of instruction
-    Instruction instruction;     // The instruction itself
+    Instruction instruction;            // The instruction itself
     uint32_t rsValue;                   // Value of rs register
     uint32_t rtValue;                   // Value of rt register
     uint32_t rdValue;                   // Value of rd register
     uint32_t aluOperationOutput;        // Result from ALU
     uint32_t memoryRetrieved;           // Data retrieved from memory
+
+    bool is_ready;                      // For an input state - did it update from last stage, for an output state did it update in stage.
 } PipelineObjectState;
 
 void reset_pipeline_object(PipelineObjectState* pipeline_object);

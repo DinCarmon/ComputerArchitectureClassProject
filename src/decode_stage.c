@@ -110,7 +110,7 @@ bool check_RAW_Hazard(Instruction instNow, Instruction unfinishedInst)
 
 bool isDataHazard(DecodeStage* self)
 {
-    if (*self->state.myCore->p_cycle >= 100)
+    if (*self->state.myCore->p_cycle >= 100 && self->state.myCore->id == 2)
         printf("hi");
     if (*self->state.myCore->p_cycle >= 47 && self->state.myCore->id == 2)
         printf("hi");
@@ -228,12 +228,18 @@ bool do_decode_operation(DecodeStage* self)
     self->state.outputState = self->state.inputState;
 
     if (isDataHazard(self))
+    {
+        self->state.inputState.is_ready = true;
+        self->state.outputState.is_ready = false;
         return true;
+    }
 
     updateRegisterValues_decode(self);
 
     doOperationsOfJumpInstructions(self);
 
+    self->state.inputState.is_ready = false;
+    self->state.outputState.is_ready = true;
     return false;
 }
 

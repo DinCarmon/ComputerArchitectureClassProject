@@ -269,14 +269,13 @@ void writeRegisterFile(FILE* registerFile, FlipFlop_uint32_t* registerArr)
 
 void write_core_trace_line(FILE* coreTraceFile,
                            Core* core,
-                           uint64_t last_succesful_writeback_execution,
-                           uint64_t last_succesful_memory_execution,
-                           uint64_t last_succesful_execute_execution,
-                           uint64_t last_succesful_decode_execution,
-                           uint64_t last_succesful_fetch_execution,
-                           uint64_t last_insuccesful_memory_execution,
-                           uint64_t last_insuccesful_decode_execution)
+                           bool fetch_stage_is_empty,
+                            bool decode_stage_is_empty,
+                            bool execute_stage_is_empty,
+                            bool memory_stage_is_empty,
+                            bool writeback_stage_is_empty)
 {
+    (void)fetch_stage_is_empty;
 
     // Write cycle
     char cycleStr[MAX_PATH_SIZE] = "";
@@ -286,13 +285,7 @@ void write_core_trace_line(FILE* coreTraceFile,
 
     // The first if is for a weird edge case print style
     // which can be seen at the given test example at core trace for core 0.
-    if (core->decode_stage.state.outputState.instruction.opcode == Halt &&
-        last_succesful_decode_execution == *(core->p_cycle))
-        writeInstructionAddressToFile(coreTraceFile,
-                                      core->pc_register.now + 1);
-    // If fetch was not executed in this cycle print ---
-    else if (last_succesful_fetch_execution != *(core->p_cycle) &&
-             last_insuccesful_decode_execution != *(core->p_cycle))
+    if (core->decode_stage.state.outputState.instruction.opcode == Halt)
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
@@ -302,19 +295,14 @@ void write_core_trace_line(FILE* coreTraceFile,
     // If decode was not executed in this cycle or
     // (decode was executed in this cycle but fetch not -> i.e a stall)
     // Then print a ---
-    if (((last_succesful_decode_execution != *(core->p_cycle)) &&
-         (last_insuccesful_decode_execution != *(core->p_cycle))) ||
-        (core->execute_stage.state.outputState.instruction.opcode == Halt) ||
-        *(core->p_cycle) <= 1)
+    if (decode_stage_is_empty == true)
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
                                       core->decode_stage.state.inputState.instructionAddress);
     fprintf(coreTraceFile, " ");
 
-    if (*(core->p_cycle) >= 3 &&
-        (last_succesful_execute_execution == *(core->p_cycle) ||
-         (last_insuccesful_memory_execution == *(core->p_cycle))))
+    if (execute_stage_is_empty == false)
         writeInstructionAddressToFile(coreTraceFile,
                                       core->execute_stage.state.inputState.instructionAddress);
     else
@@ -324,21 +312,14 @@ void write_core_trace_line(FILE* coreTraceFile,
     // If memory was not executed in this cycle or
     // (memory was executed in this cycle but execute not -> i.e a stall)
     // Then print a ---
-    if (((last_succesful_memory_execution != *(core->p_cycle)) &&
-         (last_insuccesful_memory_execution != *(core->p_cycle))) ||
-        (core->writeback_stage.state.outputState.instruction.opcode == Halt) ||
-        *(core->p_cycle) <= 3)
+    if (memory_stage_is_empty == true)
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,
                                       core->memory_stage.state.inputState.instructionAddress);
     fprintf(coreTraceFile, " ");
 
-    if (*core->p_cycle == 5)
-        printf("hi");
-
-    if (last_succesful_writeback_execution != *(core->p_cycle) ||
-        *(core->p_cycle) <= 4)
+    if (writeback_stage_is_empty == true)
         fprintf(coreTraceFile, "---");
     else
         writeInstructionAddressToFile(coreTraceFile,

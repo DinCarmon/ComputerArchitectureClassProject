@@ -44,6 +44,8 @@ bool do_write_back_operation(WriteBackStage* self)
         self->state.myCore->halt_cycle = *(self->state.myCore->p_cycle);
     }
 
+    self->state.inputState.is_ready = false;
+    self->state.outputState.is_ready = true;
     return false;       // write back never stalls
 }
 

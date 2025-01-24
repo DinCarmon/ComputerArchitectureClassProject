@@ -8,6 +8,7 @@ void reset_pipeline_object(PipelineObjectState* pipeline_object)
     pipeline_object->rdValue = 0;
     pipeline_object->rsValue = 0;
     pipeline_object->rtValue = 0;
+    pipeline_object->is_ready = false;
 
     reset_instruction(&(pipeline_object->instruction));
 }

@@ -58,47 +58,50 @@ void advance_core(Core* core,
                   int64_t last_insuccesful_memory_execution,
                   int64_t last_insuccesful_decode_execution)
 {
+    if (*core->p_cycle == 5 && core->id == 1)
+        printf("hi");
+
+    bool can_pass_from_fetch_to_decode = core->decode_stage.state.inputState.is_ready == false &&
+                                         core->fetch_stage.state.outputState.is_ready == true;
+    bool can_pass_from_decode_to_execute = core->execute_stage.state.inputState.is_ready == false &&
+                                         core->decode_stage.state.outputState.is_ready == true;
+    bool can_pass_from_execute_to_memory = core->memory_stage.state.inputState.is_ready == false &&
+                                         core->execute_stage.state.outputState.is_ready == true;
+    bool can_pass_from_memory_to_writeback = core->writeback_stage.state.inputState.is_ready == false &&
+                                         core->memory_stage.state.outputState.is_ready == true;
+
     if (last_succesful_fetch_execution == (int64_t)*(core->p_cycle))
         reset_pipeline_object(&(core->fetch_stage.state.inputState));
     if (last_succesful_decode_execution == (int64_t)*(core->p_cycle))
         reset_pipeline_object(&(core->decode_stage.state.inputState));
-    if (core->id == 2 && *(core->p_cycle) == 45)
-            printf("hi");
-    
     if (last_succesful_execute_execution == (int64_t)*(core->p_cycle))
-    {
-        if (core->id == 2)
-            printf("hi");
-        
         reset_pipeline_object(&(core->execute_stage.state.inputState));
-    }
     if (last_succesful_memory_execution == (int64_t)*(core->p_cycle))
         reset_pipeline_object(&(core->memory_stage.state.inputState));
     if (last_succesful_writeback_execution == (int64_t)*(core->p_cycle))
         reset_pipeline_object(&(core->writeback_stage.state.inputState));
 
     // Update flip flops between stages
-    if ((last_succesful_fetch_execution == (int64_t)*(core->p_cycle) &&
-         last_insuccesful_decode_execution != (int64_t)*(core->p_cycle)) ||
-        (last_succesful_decode_execution == (int64_t)*(core->p_cycle)))
-        core->decode_stage.state.inputState = core->fetch_stage.state.outputState;
-    if ((last_succesful_decode_execution == (int64_t)*(core->p_cycle)) ||
-        (last_insuccesful_decode_execution != (int64_t)*(core->p_cycle) &&
-         last_succesful_execute_execution == (int64_t)*(core->p_cycle) ))
+    if (can_pass_from_fetch_to_decode)
     {
-        if (core->id == 2)
-            printf("hi");
-
-        core->execute_stage.state.inputState = core->decode_stage.state.outputState;
+        core->decode_stage.state.inputState = core->fetch_stage.state.outputState;
+        core->fetch_stage.state.outputState.is_ready = false;
     }
-    if ((last_succesful_execute_execution == (int64_t)*(core->p_cycle) &&
-         last_insuccesful_memory_execution != (int64_t)*(core->p_cycle)) ||
-        (last_succesful_memory_execution == (int64_t)*(core->p_cycle)))
+    if (can_pass_from_decode_to_execute)
+    {
+        core->execute_stage.state.inputState = core->decode_stage.state.outputState;
+        core->decode_stage.state.outputState.is_ready = false;
+    }
+    if (can_pass_from_execute_to_memory)
+    {
         core->memory_stage.state.inputState = core->execute_stage.state.outputState;
-    if ((last_succesful_memory_execution == (int64_t)*(core->p_cycle)) ||
-        (last_insuccesful_memory_execution != (int64_t)*(core->p_cycle) &&
-         last_succesful_writeback_execution == (int64_t)*(core->p_cycle) ))
+        core->execute_stage.state.outputState.is_ready = false;
+    }
+    if (can_pass_from_memory_to_writeback)
+    {
         core->writeback_stage.state.inputState = core->memory_stage.state.outputState;
+        core->memory_stage.state.outputState.is_ready = false;
+    }
 
     // Update the num of stalls
     if(last_insuccesful_decode_execution == (int64_t)*(core->p_cycle))

@@ -138,13 +138,11 @@ void writeRegisterFile(FILE* registerFile, FlipFlop_uint32_t* registerArr);
  */
 void write_core_trace_line(FILE* coreTraceFile,
                            Core* core,
-                           uint64_t last_succesful_writeback_execution,
-                           uint64_t last_succesful_memory_execution,
-                           uint64_t last_succesful_execute_execution,
-                           uint64_t last_succesful_decode_execution,
-                           uint64_t last_succesful_fetch_execution,
-                           uint64_t last_insuccesful_memory_execution,
-                           uint64_t last_insuccesful_decode_execution);
+                           bool fetch_stage_is_empty,
+                            bool decode_stage_is_empty,
+                            bool execute_stage_is_empty,
+                            bool memory_stage_is_empty,
+                            bool writeback_stage_is_empty);
 
 void write_bus_trace_line(FILE* bus_trace_file,
                           BusManager* manager);

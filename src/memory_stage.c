@@ -168,6 +168,8 @@ bool do_memory_operation(MemoryStage* self)
         self->state.inputState.instruction.opcode != Sw)
     {
         self->num_of_cycles_on_same_command = 0;
+        self->state.inputState.is_ready = false;
+        self->state.outputState.is_ready = true;
         return false;
     }
 
@@ -180,7 +182,19 @@ bool do_memory_operation(MemoryStage* self)
         if (self->num_of_cycles_on_same_command == 0 && self->state.inputState.instruction.opcode == Sw)
             self->state.myCore->num_write_hits++;
 
-        return handleCacheHit(self);
+        bool ret = handleCacheHit(self);
+        if (ret == false)
+        {
+            self->state.inputState.is_ready = false;
+            self->state.outputState.is_ready = true;
+        }
+        else
+        {
+            self->state.inputState.is_ready = true;
+            self->state.outputState.is_ready = false;
+        }
+
+        return ret;
     }
     else
     {
@@ -190,7 +204,19 @@ bool do_memory_operation(MemoryStage* self)
         if (self->num_of_cycles_on_same_command == 0 && self->state.inputState.instruction.opcode == Sw)
             self->state.myCore->num_write_miss++;
 
-        return handleCacheMiss(self);
+        bool ret = handleCacheMiss(self);
+        if (ret == false)
+        {
+            self->state.inputState.is_ready = false;
+            self->state.outputState.is_ready = true;
+        }
+        else
+        {
+            self->state.inputState.is_ready = true;
+            self->state.outputState.is_ready = false;
+        }
+
+        return ret;
     }
 
     // Code run should not get here.
