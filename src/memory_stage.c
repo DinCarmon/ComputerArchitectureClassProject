@@ -64,6 +64,7 @@ bool handleCacheMiss(MemoryStage* self)
     // at this cycle
     if (get_block_offset(self->state.myCore->bus_manager->bus_line_addr.now) == DATA_CACHE_BLOCK_DEPTH - 1 &&
         get_index(self->state.myCore->bus_manager->bus_line_addr.now) == get_index(self->state.inputState.aluOperationOutput) &&
+        get_tag(self->state.myCore->bus_manager->bus_line_addr.now) == get_tag(self->state.inputState.aluOperationOutput) &&
         self->state.myCore->bus_manager->core_turn.now == self->state.myCore->id &&
         self->state.myCore->bus_manager->bus_cmd.now == FLUSH_CMD)
     {
@@ -91,7 +92,9 @@ bool handleCacheMiss(MemoryStage* self)
     }
 
     if (self->num_of_cycles_on_same_command == 0 && self->state.inputState.instruction.opcode == Lw)
+    {
         self->state.myCore->num_read_miss++;
+    }
     if (self->num_of_cycles_on_same_command == 0 && self->state.inputState.instruction.opcode == Sw)
         self->state.myCore->num_write_miss++;
 
@@ -122,12 +125,24 @@ bool handleCacheMiss(MemoryStage* self)
                                                            get_index(self->state.inputState.aluOperationOutput)),
                   &(self->state.myCore->cache_now)) == MODIFIED)
     {
-        if (is_open_for_start_of_new_enlisting(self->state.myCore->bus_manager))
-            enlist_to_bus(&(self->state.myCore->requestor), 
-                          get_first_address_in_corresponding_block(&(self->state.myCore->cache_now),
-                                                                   get_index(self->state.inputState.aluOperationOutput)),
-                          FLUSH_CMD,
-                          self->state.myCore->bus_manager);
+        // This may be the end of the flush we already sent. We make sure it is not
+        if (!(self->state.myCore->bus_manager->core_turn.now == self->state.myCore->id &&
+              self->state.myCore->bus_manager->bus_cmd.now == FLUSH_CMD &&
+              get_block_offset(self->state.myCore->bus_manager->bus_line_addr.now) == DATA_CACHE_BLOCK_DEPTH - 1 &&
+              get_index(self->state.myCore->bus_manager->bus_line_addr.now) == get_index(get_first_address_in_corresponding_block(&(self->state.myCore->cache_now),
+                                                                                                                                  get_index(self->state.inputState.aluOperationOutput)))))
+        {
+            if (is_open_for_start_of_new_enlisting(self->state.myCore->bus_manager))
+                enlist_to_bus(&(self->state.myCore->requestor), 
+                            get_first_address_in_corresponding_block(&(self->state.myCore->cache_now),
+                                                                    get_index(self->state.inputState.aluOperationOutput)),
+                            FLUSH_CMD,
+                            self->state.myCore->bus_manager);
+        }
+        else
+        {
+            // Do nothing and stall. The bus manager shall operate and cause the flushed block index tag to be invalid at end of this cycle.
+        }
         self->num_of_cycles_on_same_command++;
 		return true;
     }
