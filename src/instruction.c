@@ -27,7 +27,9 @@ void parseCmdToInstruction(Instruction* self, uint32_t codex)
     // Sign extension for immediate value
     if (self->immediate > (uint32_t)(pow(2, IMMEDIATE_FIELD_SIZE_IN_BITS) / 2))
     {
-        self->immediate |= 0xFFFFF000;
+        uint32_t tmp = (-pow(2, IMMEDIATE_FIELD_SIZE_IN_BITS) / 2) + (self->immediate - pow(2, IMMEDIATE_FIELD_SIZE_IN_BITS) / 2);
+
+        self->immediate = tmp;
     }
 
     if (codex > Halt) // Assume all codexes are valid until halt, and not above
